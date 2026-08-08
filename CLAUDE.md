@@ -13,27 +13,34 @@ channels then read zero).
 
 ## Current state — read this first
 
-**The TRI file is finished and validated.** `tri/S-AQY.TRI` holds all 16
-sensors in the correct order, with the two Gen2 internal rows verbatim.
-`tools/validate_tri.py` passes on it and on both reference files; 20 tests green.
+**`tri/S-AQY.TRI` is final and verified on the real display.** It was uploaded
+through oDSS on 8 August 2026 and checked in the car.
 
-What has **not** happened yet: the file has never been uploaded to a real
-display. Everything so far is offline editing and validation. The upload and
-the checks that go with it are step D of the harness checklist, which lives in
-the `kicad` repo at `canfuel/docs/harness.md`.
+- All nine channels that read the car's bus directly show correct values.
+- The seven channels fed by the converter read 0, exactly as expected while
+  no converter exists. That is the correct result, not a fault.
+- The file loaded without the "sensor named 0" problem, so the `info;` header
+  row did not need deleting on this oDSS version.
 
-Nine channels will work the moment it is uploaded. Seven will read zero until
-the `canfuel` converter exists, and that is correct, not a fault.
+Offline validation also passes: 16 sensors in the right order, both Gen2
+internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
+reference files, 20 tests green.
 
-### Likely next work
+### There is no outstanding work in this repo
 
-- Upload through oDSS and confirm DisplayVolt reads a realistic ~12–14 V.
-  That single number is the proof the file loaded correctly.
-- Calibrate DisplayVolt with two points if the stock 0–1023 → 0–56 V scaling
-  is off. The procedure is in `docs/sensors.md`.
-- Nothing here changes until the converter transmits 0x600–0x602. When it
-  does, the layout in `canfuel/docs/frames.md` and this TRI file have to be
-  changed together — that is the only coupling between the two repos.
+The TRI file is done. Do not change it speculatively.
+
+The one thing that will require a change is the converter going live: when
+`canfuel` starts transmitting 0x600–0x602, the layout in
+`canfuel/docs/frames.md` and this file have to move together. That is the only
+coupling between the two repos, and it runs in both directions — a change here
+without a matching change there breaks the display silently, with plausible but
+wrong numbers rather than an error.
+
+At that point the useful check is comparing FuelNow against FuelCntRaw on the
+display: FuelCntRaw is the raw ECU counter with no conversion, so if it rises
+while FuelNow shows nonsense, the fault is in the converter's arithmetic rather
+than in its input.
 
 ---
 

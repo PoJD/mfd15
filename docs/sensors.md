@@ -28,6 +28,11 @@ display. State as of 2 August 2026.
 Yes, six values will read zero until the converter exists — those are #4–#9.
 The seventh, #15, is a new addition described below.
 
+> **Verified on hardware, 8 August 2026.** The file was uploaded through oDSS
+> and checked in the car. Every channel marked ✅ shows correct values, and the
+> converter-fed channels read 0 as expected. The table above is no longer a
+> prediction.
+
 ---
 
 ## 1. RPM — engine speed
@@ -271,6 +276,14 @@ matter — editing the TRI offline to add an internal sensor is enough. The only
 problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 0–53 V, which is different hardware).
 
+> **Outcome, 8 August 2026.** With the stock Gen2 scaling from the official
+> files (`0–1023 → 0–56 V`, the `DisplayVolt` row copied verbatim) the channel
+> reads correctly on the real display, so the two-point calibration below was
+> not needed. Worth keeping in mind that "reads correctly" here means the value
+> is in the expected 12–14 V band and tracks the engine running or not — it has
+> not been compared against a multimeter at the display connector. If a
+> fraction of a volt ever matters, do that comparison and use the procedure below.
+
 **Calibrate it yourself with two points:**
 
 1. Add a TRI row for the internal voltage sensor but with **raw scaling**:
@@ -324,9 +337,16 @@ rolling-average slots for range, and even that fits comfortably.
 
 ## Still to verify
 
-1. **Trip reset on the cluster** — a sniff with a reset. If trip kilometres are
-   broadcast, the average reset hooks onto them. If not, the Can Switching licence.
+None of these block the TRI file, which is finished. They are open questions
+about the signals themselves and belong to the `canfuel` work.
+
+1. **Trip reset on the cluster** — a sniff with a reset. Superseded for the
+   purpose of resetting the average, which is now tied to refuelling, but the
+   question of whether trip kilometres are broadcast is still unanswered.
+   `06_trip_reset.txt` was recorded for it and has not been analysed.
 2. **Is 0x420 b3 oil or IAT?** — a brisk drive. IAT would drop, oil would not.
+   `07_accel.txt` argues for oil (the value held at 75.75 → 76.5 °C during the
+   pull-away) but the run was only 16 s, so it is not conclusive.
 3. **AccelG: longitudinal or lateral?** — park across a slope.
 4. **0x288 b5 and b6** — load-dependent, undecoded. Candidates are MAF,
    ignition advance and injection time. Fastest route is comparing against

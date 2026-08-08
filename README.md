@@ -6,6 +6,13 @@ AQY engine (2.0 l / 85 kW, PQ34).
 This repository has no build. It holds the data file `tri/S-AQY.TRI` and the
 documentation for the format.
 
+## Status
+
+**Final.** `tri/S-AQY.TRI` was uploaded to the display and verified in the car
+on 8 August 2026. Every channel that reads the car's bus shows correct values;
+the channels fed by the `canfuel` converter read 0, as expected while that
+converter does not exist yet.
+
 ## What the file does
 
 16 sensors. Nine of them read the car's powertrain CAN directly and work on
