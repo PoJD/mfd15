@@ -1,293 +1,335 @@
-# Senzory v S-AQY.TRI — kompletní popis
+# Sensors in S-AQY.TRI — full description
 
-Beetle AQY (2,0 l / 85 kW), hnací CAN 500 kbps, displej CANchecked MFD15 Gen2.
-Stav k 2. 8. 2026.
+Beetle AQY (2.0 l / 85 kW), powertrain CAN at 500 kbps, CANchecked MFD15 Gen2
+display. State as of 2 August 2026.
 
 ---
 
-## Přehled
+## Overview
 
-| # | Název v TRI | Co to je | Zdroj | Funguje hned? |
+| # | Name in TRI | What it is | Source | Works immediately? |
 |---|---|---|---|---|
-| 1 | RPM | otáčky motoru | 0x280 b2-3 | ✅ ano |
-| 2 | Speed | rychlost vozidla | 0x1A0 b2-3 | ✅ ano |
-| 3 | CLT | teplota chladicí kapaliny | 0x288 b1 | ✅ ano |
-| 4 | FuelNow | okamžitá spotřeba l/100 km | 0x600 b0-1 | ❌ převodník |
-| 5 | FuelAvg | průměrná spotřeba l/100 km | 0x600 b2-3 | ❌ převodník |
-| 6 | FuelTank | palivo v nádrži, tlumené | 0x600 b4-5 | ❌ převodník |
-| 7 | Range | odhad dojezdu v km | 0x600 b6-7 | ❌ převodník |
-| 8 | Torque | točivý moment Nm | 0x601 b2-3 | ❌ převodník |
-| 9 | Power | okamžitý výkon kW | 0x601 b0-1 | ❌ převodník |
-| 10 | OilTemp | teplota oleje | 0x420 b3 | ✅ ano |
-| 11 | TankL | palivo v nádrži, surově z auta | 0x320 b2 | ✅ ano |
-| 12 | AccelG | podélné/příčné zrychlení | 0x5A0 b0 | ✅ ano |
-| 13 | FuelCntRaw | surový čítač spotřeby z ECU | 0x480 b2-3 | ✅ ano |
-| 14 | DisplayVolt | napájecí napětí displeje (= 12V auta) | interní senzor MFD | ✅ ano, po kalibraci |
-| 15 | VddConv | 5V větev, kterou vidí převodník | 0x601 b6-7 | ❌ převodník |
+| 1 | RPM | engine speed | 0x280 b2-3 | ✅ yes |
+| 2 | Speed | vehicle speed | 0x1A0 b2-3 | ✅ yes |
+| 3 | CLT | coolant temperature | 0x288 b1 | ✅ yes |
+| 4 | FuelNow | instantaneous consumption l/100 km | 0x600 b0-1 | ❌ needs converter |
+| 5 | FuelAvg | average consumption l/100 km | 0x600 b2-3 | ❌ needs converter |
+| 6 | FuelTank | fuel in tank, damped | 0x600 b4-5 | ❌ needs converter |
+| 7 | Range | range estimate in km | 0x600 b6-7 | ❌ needs converter |
+| 8 | Torque | torque in Nm | 0x601 b2-3 | ❌ needs converter |
+| 9 | Power | instantaneous power in kW | 0x601 b0-1 | ❌ needs converter |
+| 10 | OilTemp | oil temperature | 0x420 b3 | ✅ yes |
+| 11 | TankL | fuel in tank, raw from the car | 0x320 b2 | ✅ yes |
+| 12 | AccelG | longitudinal/lateral acceleration | 0x5A0 b0 | ✅ yes |
+| 13 | FuelCntRaw | raw fuel counter from the ECU | 0x480 b2-3 | ✅ yes |
+| 14 | DisplayVolt | display supply voltage (= car's 12 V) | MFD internal sensor | ✅ yes, after calibration |
+| 15 | VddConv | the 5 V rail as the converter sees it | 0x601 b6-7 | ❌ needs converter |
 
-**Ano, 6 hodnot bude ukazovat nulu, dokud nebude převodník** — jsou to #4–#9.
-Sedmá, #15, je nový návrh níže. Ty čtyři, o kterých jsem psal dřív, byly jen ty
-z rámce 0x600; zapomněl jsem připočíst moment a výkon z 0x601.
-
----
-
-## 1. RPM — otáčky motoru
-
-- **Zdroj:** 0x280 (Motor 1) bajty 2–3, little endian
-- **Vzorec:** `raw × 0,25` = ot/min
-- **Ověřeno:** volnoběh raw 0x0C76 = 3190 → 797 ot/min; log 05 raw 11741 → 2935 ot/min
-- **Rozsah:** 0–8000, při vypnutém motoru přesně 0
-- **Poznámka:** ECU vysílá 0x280 každých ~10,5 ms, takže je to nejrychlejší
-  spolehlivé „hodiny" na sběrnici. Firmware převodníku toho využívá pro
-  časování, i když má vlastní timer.
-
-## 2. Speed — rychlost vozidla
-
-- **Zdroj:** 0x1A0 (Motor 2) bajty 2–3, little endian
-- **Vzorec:** `raw × 0,005` = km/h
-- **Platnost:** hodnota je platná **jen když bajt 1 == 0x40**. Po zapnutí
-  zapalování dělá zpráva ~0,4 s inicializační rampu (raw klesá 464 → 0) a
-  během ní je bajt 1 = 0x43. To se musí zahodit, jinak by převodník na
-  půl sekundy viděl 2,3 km/h z ničeho.
-- **Faktor 0,005, ne 0,01:** určeno z toho, že celá testovací jízda byla na
-  jedničku — max raw 3879 → 19,4 km/h při ~2560 ot/min, což odpovídá prvnímu
-  převodovému stupni. S faktorem 0,01 by vycházelo 38,8 km/h, což na jedničku
-  nejde.
-- **Křížová kontrola:** 0x4A0 nese čtyři rychlosti kol jako 16bit LE, kde
-  `(raw >> 1) × 0,01` km/h a bit 0 je směr otáčení. Souhlasí s 0x1A0 na ±1 km/h.
-
-## 3. CLT — teplota chladicí kapaliny
-
-- **Zdroj:** 0x288 (Motor 3) bajt 1
-- **Vzorec:** `raw × 0,75 − 48` = °C
-- **Chybová hodnota:** 0xFF
-- **Ověřeno:** napříč všemi pěti logy monotónní zahřívací křivka
-  68 → 90 → 94,5 → 99 → 100,5 °C. Potvrzeno i externím zdrojem (OSM wiki VW-CAN).
-- **Poznámka:** stejná teplota je i v 0x420 bajt 4, ale tlumená přístrojovkou
-  (pomalejší náběh, aby ručička neskákala). Pro displej je lepší 0x288.
-
-## 4. FuelNow — okamžitá spotřeba
-
-- **Zdroj:** rámec převodníku 0x600 bajty 0–1, big endian
-- **Vzorec:** `raw × 0,1` = l/100 km
-- **Jak to počítá převodník:** z čítače v 0x480 (µl) a rychlosti z 0x1A0.
-  `l/100km = (µl/s ÷ ujeté m/s) × 0,1`
-- **Corner case:** při rychlosti pod 5 km/h se posílá 999 → displej ukáže
-  99,9. To je záměr, stejně jako to dělají OEM palubní počítače.
-- **Vyhlazení:** klouzavý průměr ~1 s, jinak by číslo tancovalo nečitelně.
-
-## 5. FuelAvg — průměrná spotřeba
-
-- **Zdroj:** 0x600 bajty 2–3, big endian
-- **Vzorec:** `raw × 0,1` = l/100 km
-- **Jak to počítá převodník:** jako podíl dvou akumulátorů — celkem spotřebované
-  mikrolitry ÷ celkem ujeté metry. **Ne** jako průměr okamžitých hodnot; ten by
-  byl matematicky špatně (stání na semaforu s nekonečnou okamžitou spotřebou by
-  průměr zničilo).
-- **Persistence:** akumulátory se ukládají do EEPROM 1× za 60 s, kruhový buffer
-  64 slotů.
-- **Reset:** naváže se na trip reset přístrojovky, pokud se potvrdí, že se trip
-  km na sběrnici vysílají (test po návratu z Indie). Jinak Can Switch z MFD15.
-
-## 6. FuelTank — palivo v nádrži (tlumené)
-
-- **Zdroj:** 0x600 bajty 4–5, big endian
-- **Vzorec:** `raw × 0,1` = litry
-- **Rozdíl proti TankL (#11):** tohle je tatáž veličina, ale prohnaná přes
-  60sekundovou časovou konstantu v převodníku. Plovák v nádrži šplouchá při
-  každém zatáčení a brzdění; syrová hodnota by na displeji poskakovala.
-  Tenhle kanál je ten, který má smysl skutečně zobrazovat.
-
-## 7. Range — odhad dojezdu
-
-- **Zdroj:** 0x600 bajty 6–7, big endian
-- **Vzorec:** `raw × 1` = km
-- **Jak to počítá převodník:** `zbylé litry ÷ (klouzavá spotřeba na posledních
-  30 km) × 100`. Klouzavý průměr je po segmentech 1 km, tedy 30 slotů — proto
-  se odhad chová jako v moderních autech: po sešlápnutí plynu na dálnici
-  postupně klesá, neskočí okamžitě.
-- **Corner case:** dokud není najetých aspoň 5 km od startu, použije se
-  konzervativní default 9 l/100 km, aby odhad nebyl při studeném startu nesmysl.
-
-## 8. Torque — točivý moment
-
-- **Zdroj:** 0x601 bajty 2–3, big endian
-- **Vzorec:** `raw × 0,1` = Nm
-- **Proč jde přes převodník a ne přímo z 0x280 b7:** ECU posílá **indikovaný**
-  moment, tedy to, co produkují spaliny, ne to, co jde na kola. Musí se odečíst
-  ztrátový moment (tření, čerpadla, alternátor), který není konstantní — roste
-  s otáčkami. Převodník ho modeluje lineárně podle otáček, kalibrovaný ve dvou
-  bodech: volnoběh a 3000 ot/min v neutrálu. Obojí už v logách máme.
-- **Škálování zdroje:** 0x280 bajty 1, 4 a 7 nesou tři varianty momentu
-  (požadavek řidiče / indikovaný / vnitřní), ~0,39 % na bit. U AQY je maximum
-  172 Nm → 0,67 Nm na bit.
-- **Realismus:** ME7 moment neměří, modeluje ho z hmotnosti vzduchu na zdvih
-  s korekcemi na předstih a lambdu. 100 % je kalibrační konstanta v ECU, kterou
-  běžný čip nemění. Čísla jsou tedy indikativní, ne dynamometrická.
-
-## 9. Power — okamžitý výkon
-
-- **Zdroj:** 0x601 bajty 0–1, big endian
-- **Vzorec:** `raw × 0,1` = kW
-- **Proč přes převodník:** `výkon = moment × otáčky ÷ 9550`. MFD15 to spočítat
-  neumí — math kanály (MathChannel1-8) jsou podle manuálu jen pro MFD28/32 Gen2.
-  MFD15 je nemá. Takže to musí spočítat převodník a poslat hotové.
-
-## 10. OilTemp — teplota oleje
-
-- **Zdroj:** 0x420 (Kombi 1) bajt 3
-- **Vzorec:** `raw × 0,75 − 48` = °C
-- **Chybová hodnota:** 0xFF (v logu 01 se zapalováním bez motoru je tam přesně
-  0xFF, v logu 05 při 3000 ot/min je 116 → 39 °C)
-- **⚠️ Nepotvrzeno:** OSM wiki VW-CAN říká pro 0x420 b3 olej. Ty čekáš, že
-  čidlo teploty oleje v autě nemáš. Přes session hodnota rostla 21 → 39 → 61
-  → 66 °C, což je pomalejší náběh než chladicí kapalina — a to je argument
-  **pro** olej. IAT (nasávaný vzduch) by při stání kopíroval teplotu motorového
-  prostoru a při rozjezdu by spadl. Rozhodne svižná jízda.
-- **Bajt 1 a 2 v 0x420** jsou podle zdroje venkovní teplota `(raw−100)/2`,
-  u tebe obojí 0x00 → čidlo venkovní teploty nemáš.
-
-## 11. TankL — palivo v nádrži (surově)
-
-- **Zdroj:** 0x320 bajt 2, maska 0x7F
-- **Vzorec:** `raw & 0x7F` = litry přímo, bez přepočtu
-- **Bit 0x80** = rozsvícená rezerva
-- **Tvoje aktuální data:** ve všech logách přesně 0x80, tedy **0 litrů + svítí
-  rezerva**. Sedí to na to, co říkáš — dojíždíš na doraz, aby se rozmělnil
-  původní benzin, a pak doléváš 5–6 l z kanystru.
-- **K čemu to je v TRI:** jako kontrolní/diagnostický kanál. Až budeš mít
-  převodník, budeš na displeji sledovat FuelTank (#6). TankL ti řekne, co
-  posílá auto, než to převodník vyhladí — užitečné při ladění a při ověřování,
-  jestli je hodnota opravdu v litrech (natankuj známé množství a porovnej).
-
-## 12. AccelG — zrychlení
-
-- **Zdroj:** 0x5A0 (Bremse 2) bajt 0
-- **Vzorec:** `(raw − 127) ÷ 100` = G
-- **Ano, je to akcelerace**, ale pozor: **není jisté, jestli podélná nebo
-  příčná.** Zdroj to neupřesňuje. Tvoje data ukazují v klidu stabilně 127–128
-  (= 0 G), za jízdy kolísání 110–153 (−0,17 až +0,26 G) a po zastavení
-  118–119. Ten offset po zastavení je buď sklon pozemku (podélný senzor), nebo
-  trvalá odchylka. Pokud je podélný, spolehlivě to rozhodneš tím, že
-  zaparkuješ napříč na svahu.
-- **Historická poznámka:** dřív jsem tenhle bajt chybně označil za stav
-  nádrže. To bylo špatně, opraveno.
-
-## 13. FuelCntRaw — surový čítač spotřeby
-
-- **Zdroj:** 0x480 bajty 2–3, little endian, maska 0x7FFF
-- **Ano, je to přesně to, co posílá ECU**, bez jakéhokoli přepočtu.
-- **Jednotka: 1 = 1 mikrolitr.** Není to odhad — potvrzeno nezávislým externím
-  zdrojem (fórum YBW, projekt čtení VAG CANu) a shoduje se se vším, co vyšlo
-  z tvých vlastních dat.
-- **Chování:** čítač jede jen dopředu, je **15bitový** (bit 15 je konstantně 1,
-  musí se maskovat pryč) a přetéká na 32767. Při vypnutí zapalování se
-  **resetuje na nulu** — ověřeno v logu 01, kde je celých 81 rámců přesně
-  0x0000.
-- **Naměřené průtoky:**
-  - zahřátý volnoběh 797 ot/min → 310 µl/s = **1,12 l/h**
-  - 2940 ot/min bez zátěže (log 05) → 958 µl/s = **3,45 l/h**
-- **Proč to chceš mít na displeji:** je to jediný kanál, kterým poznáš, že
-  převodník počítá blbě. Když FuelNow ukáže nesmysl, podíváš se, jestli
-  tenhle roste — a hned víš, jestli je problém ve vstupu, nebo ve výpočtu.
-- **Past pro firmware:** delta se počítá `(nový − starý) mod 32768`. Po startu
-  motoru začíná čítač od nuly, takže bez detekce restartu by delta dala
-  nesmyslný skok o desítky tisíc µl. Detekce: `čítač == 0 || otáčky == 0`
-  → reinicializovat `prev`.
+Yes, six values will read zero until the converter exists — those are #4–#9.
+The seventh, #15, is a new addition described below.
 
 ---
 
-## Napětí — co jsem zjistil a co s tím
+## 1. RPM — engine speed
 
-### Na CAN sběrnici napětí není
+- **Source:** 0x280 (Motor 1) bytes 2–3, little endian
+- **Formula:** `raw × 0.25` = rpm
+- **Verified:** idle raw 0x0C76 = 3190 → 797 rpm; log 05 raw 11741 → 2935 rpm
+- **Range:** 0–8000; exactly 0 with the engine off
+- **Note:** the ECU sends 0x280 every ~10.5 ms, making it the fastest reliable
+  "clock" on the bus. The converter firmware uses it for timing even though it
+  has its own timer.
 
-Projel jsem oba logy systematicky: každý bajt každého ID, plus všechny
-16bitové kombinace v LE i BE, a hledal jsem hodnotu, která by mezi „jen
-zapalování" (~12,2 V) a „3000 ot/min" (~14,2 V) vyskočila o těch správných
-zhruba 15 % a dala se rozumným škálováním převést na napětí.
+## 2. Speed — vehicle speed
 
-**Nic to nenašlo.** Čtyři bajty sice ten poměr mají, ale žádný z nich to
-nemůže být:
+- **Source:** 0x1A0 (Motor 2) bytes 2–3, little endian
+- **Formula:** `raw × 0.005` = km/h
+- **Validity:** the value is valid **only when byte 1 == 0x40**. After the
+  ignition is switched on the message runs an init ramp for ~0.4 s (raw falls
+  464 → 0) during which byte 1 is 0x43. That has to be discarded, otherwise the
+  converter would briefly see 2.3 km/h out of nowhere.
 
-| Bajt | ign → rev | Proč to není napětí |
+  > **Correction from phase 0.** Byte 1 is a bit field, not a single value.
+  > 0x48 and 0x50 are equally valid states and 0x48 is in fact the majority in
+  > `07_accel.txt`. The correct rule is `(b1 & 0x40) && !(b1 & 0x03)`. See
+  > `canfuel/docs/can-decoding.md`.
+
+- **Factor 0.005, not 0.01:** determined from the fact that the whole test
+  drive was in first gear — max raw 3879 → 19.4 km/h at ~2560 rpm, which fits
+  first gear. With a factor of 0.01 it would come out as 38.8 km/h, which first
+  gear cannot do.
+- **Cross-check:** 0x4A0 carries four wheel speeds as 16-bit LE, where
+  `(raw >> 1) × 0.01` km/h and bit 0 is the direction of rotation. It agrees
+  with 0x1A0 to within ±1 km/h.
+
+## 3. CLT — coolant temperature
+
+- **Source:** 0x288 (Motor 3) byte 1
+- **Formula:** `raw × 0.75 − 48` = °C
+- **Fault value:** 0xFF
+- **Verified:** a monotonic warm-up curve across all five logs,
+  68 → 90 → 94.5 → 99 → 100.5 °C. Also confirmed by an external source
+  (the OSM wiki on VW-CAN).
+- **Note:** the same temperature also appears in 0x420 byte 4, but damped by
+  the instrument cluster (slower rise so the needle does not jump). 0x288 is
+  the better choice for the display.
+
+## 4. FuelNow — instantaneous consumption
+
+- **Source:** converter frame 0x600 bytes 0–1, big endian
+- **Formula:** `raw × 0.1` = l/100 km
+- **How the converter computes it:** from the counter in 0x480 (µl) and the
+  speed from 0x1A0. `l/100km = (µl/s ÷ metres/s) × 0.1`
+- **Corner case:** below 5 km/h it sends 999 → the display shows 99.9. That is
+  intentional, the same as OEM trip computers do.
+
+  > **Correction from phase 0.** The threshold ended up at 4.0 km/h and below
+  > it the channel switches to l/h rather than clamping. See
+  > `canfuel/docs/frames.md`.
+
+- **Smoothing:** a ~1 s rolling average, otherwise the number dances unreadably.
+
+## 5. FuelAvg — average consumption
+
+- **Source:** 0x600 bytes 2–3, big endian
+- **Formula:** `raw × 0.1` = l/100 km
+- **How the converter computes it:** as the ratio of two accumulators — total
+  microlitres consumed ÷ total metres driven. **Not** as an average of
+  instantaneous values; that would be mathematically wrong (standing at a red
+  light with infinite instantaneous consumption would destroy the average).
+- **Persistence:** the accumulators are written to EEPROM once every 60 s,
+  circular buffer, 64 slots.
+- **Reset:** will hook into the cluster's trip reset if it turns out trip
+  kilometres are broadcast on the bus. Otherwise a Can Switch from the MFD15.
+
+  > **Superseded in phase 0.** The reset is now tied to refuelling, which needs
+  > neither a sniff nor a licence. See `canfuel/docs/refuel-reset.md`.
+
+## 6. FuelTank — fuel in tank (damped)
+
+- **Source:** 0x600 bytes 4–5, big endian
+- **Formula:** `raw × 0.1` = litres
+- **Difference from TankL (#11):** the same quantity, but run through a 60 s
+  time constant in the converter. The float in the tank sloshes on every corner
+  and every brake application; the raw value would jump around on the display.
+  This is the channel that actually makes sense to show.
+
+## 7. Range — range estimate
+
+- **Source:** 0x600 bytes 6–7, big endian
+- **Formula:** `raw × 1` = km
+- **How the converter computes it:** `litres remaining ÷ (rolling consumption
+  over the last 30 km) × 100`. The rolling average runs over 1 km segments,
+  so 30 slots — which is why the estimate behaves like a modern car's: after
+  flooring it on the motorway it falls gradually rather than jumping.
+- **Corner case:** until at least 5 km have been driven since startup, a
+  conservative default of 9 l/100 km is used so the estimate is not nonsense
+  on a cold start.
+
+## 8. Torque
+
+- **Source:** 0x601 bytes 2–3, big endian
+- **Formula:** `raw × 0.1` = Nm
+- **Why it goes through the converter and not straight from 0x280 b7:** the ECU
+  sends **indicated** torque, i.e. what the combustion produces, not what
+  reaches the wheels. Drag torque (friction, pumps, alternator) has to be
+  subtracted, and it is not constant — it rises with engine speed. The
+  converter models it linearly against rpm, calibrated at two points: idle and
+  3000 rpm in neutral. Both are already in the logs.
+- **Source scaling:** bytes 1, 4 and 7 of 0x280 carry three torque variants
+  (driver request / indicated / internal) at ~0.39 % per bit. The AQY maximum
+  is 172 Nm → 0.67 Nm per bit.
+- **Realism:** the ME7 does not measure torque, it models it from air mass per
+  stroke with corrections for ignition advance and lambda. The 100 % figure is
+  a calibration constant in the ECU that an ordinary chip tune does not change.
+  The numbers are therefore indicative, not dyno-grade.
+
+## 9. Power
+
+- **Source:** 0x601 bytes 0–1, big endian
+- **Formula:** `raw × 0.1` = kW
+- **Why through the converter:** `power = torque × rpm ÷ 9550`. The MFD15
+  cannot compute it — per the manual, the math channels (MathChannel1-8) exist
+  only on the MFD28/32 Gen2. The MFD15 does not have them, so the converter has
+  to compute it and send the finished value.
+
+## 10. OilTemp — oil temperature
+
+- **Source:** 0x420 (Kombi 1) byte 3
+- **Formula:** `raw × 0.75 − 48` = °C
+- **Fault value:** 0xFF (in log 01, ignition on without the engine running, it
+  is exactly 0xFF; in log 05 at 3000 rpm it reads 116 → 39 °C)
+- **⚠️ Unconfirmed:** the OSM VW-CAN wiki says 0x420 b3 is oil. The car is not
+  expected to have an oil temperature sensor. Across the session the value rose
+  21 → 39 → 61 → 66 °C, a slower rise than the coolant — which is an argument
+  **for** oil. IAT (intake air) would track the engine bay temperature while
+  standing and would drop when accelerating. A brisk drive settles it.
+
+  > **Phase 0 update.** `07_accel.txt` was recorded for exactly this. The
+  > temperature holds at 75.75 → 76.5 °C during the acceleration and does not
+  > fall, which argues for oil — but the run was only 16 s, so it is still not
+  > conclusive.
+
+- **Bytes 1 and 2 of 0x420** are, according to the source, ambient temperature
+  `(raw−100)/2`; both read 0x00 here, so there is no ambient temperature sensor.
+
+## 11. TankL — fuel in tank (raw)
+
+- **Source:** 0x320 byte 2, mask 0x7F
+- **Formula:** `raw & 0x7F` = litres directly, no conversion
+- **Bit 0x80** = reserve lamp lit
+- **Current data:** exactly 0x80 in every log, i.e. **0 litres with the reserve
+  lamp on**. That matches the usage pattern — running it right down to disperse
+  the original petrol, then topping up 5–6 l from a jerrycan.
+- **What it is for in the TRI file:** a diagnostic/reference channel. Once the
+  converter exists, FuelTank (#6) is what gets watched on the display. TankL
+  shows what the car actually sends before the converter smooths it — useful
+  when debugging and when verifying the value really is in litres (refuel a
+  known amount and compare).
+
+## 12. AccelG — acceleration
+
+- **Source:** 0x5A0 (Bremse 2) byte 0
+- **Formula:** `(raw − 127) ÷ 100` = G
+- **Yes, it is acceleration**, but note: **it is not certain whether
+  longitudinal or lateral.** The source does not say. The data shows a stable
+  127–128 (= 0 G) at rest, 110–153 while driving (−0.17 to +0.26 G) and 118–119
+  after stopping. That offset after stopping is either the slope of the ground
+  (longitudinal sensor) or a permanent bias. If it is longitudinal, parking
+  across a slope settles it reliably.
+- **Historical note:** this byte was previously mislabelled as tank level.
+  That was wrong and has been corrected.
+
+## 13. FuelCntRaw — raw fuel counter
+
+- **Source:** 0x480 bytes 2–3, little endian, mask 0x7FFF
+- **Yes, this is exactly what the ECU sends**, with no conversion.
+- **Unit: 1 = 1 microlitre.** Not a guess — confirmed by an independent
+  external source (the YBW forum, a VAG CAN reading project) and consistent
+  with everything our own data shows.
+- **Behaviour:** the counter only moves forwards, is **15-bit** (bit 15 must be
+  masked away) and wraps at 32767. It **resets to zero** when the ignition is
+  switched off — verified in log 01, where all 81 frames read exactly 0x0000.
+
+  > **Correction from phase 0.** Two details are wrong here. Bit 15 is not
+  > constant: it is zero from ignition on until the first wrap, then
+  > permanently one. And the counter wraps at 32768, so the modulus is 32768,
+  > not 32767. Neither affects the arithmetic, since the mask drops bit 15.
+  > See `canfuel/docs/can-decoding.md`.
+
+- **Measured flow rates:**
+  - warm idle at 797 rpm → 310 µl/s = **1.12 l/h**
+  - 2940 rpm unloaded (log 05) → 958 µl/s = **3.45 l/h**
+
+  > **Phase 0 update.** The idle figure reproduces exactly, but only after
+  > de-duplicating `02_idle_60s.txt`, which contains the recording twice. The
+  > 2940 rpm figure measures 1005 µl/s rather than 958; the gap is in the
+  > assumed frame period, not in the data.
+
+- **Why you want it on the display:** it is the one channel that reveals the
+  converter miscalculating. When FuelNow shows nonsense, a glance at whether
+  this one is rising says immediately whether the problem is in the input or in
+  the computation.
+- **Firmware trap:** the delta is computed `(new − old) mod 32768`. After an
+  engine start the counter begins at zero, so without restart detection the
+  delta would jump nonsensically by tens of thousands of µl. Detection:
+  `counter == 0 || rpm == 0` → reinitialise `prev`.
+
+---
+
+## Voltage — what was found and what to do about it
+
+### There is no voltage on the CAN bus
+
+Both logs were searched systematically: every byte of every ID, plus all 16-bit
+combinations in both LE and BE, looking for a value that would jump by the
+right ~15 % between "ignition only" (~12.2 V) and "3000 rpm" (~14.2 V) and
+convert to a voltage under some sensible scaling.
+
+**Nothing turned up.** Four bytes do have that ratio, but none of them can be it:
+
+| Byte | ign → rev | Why it is not voltage |
 |---|---|---|
-| 0x050 b2, b3 | 112 → 128 | 16 unikátních hodnot po násobcích 16 = rolovací čítač/checksum |
-| 0x320 b0 | 64 → 69 | bitová maska dveří |
-| 0x5A0 b0 | 119 → 128 | zrychlení (AccelG) |
+| 0x050 b2, b3 | 112 → 128 | 16 unique values in steps of 16 = a rolling counter/checksum |
+| 0x320 b0 | 64 → 69 | door bit mask |
+| 0x5A0 b0 | 119 → 128 | acceleration (AccelG) |
 
-To dává smysl i teoreticky: na PQ34 měří napětí baterie přístrojovka pro sebe
-a na hnací CAN ho nevysílá. Dostupné je přes diagnostiku (měřené bloky VCDS),
-ne broadcastem.
+That also makes sense theoretically: on the PQ34 the instrument cluster
+measures battery voltage for itself and does not broadcast it on the powertrain
+CAN. It is available through diagnostics (VCDS measuring blocks), not by broadcast.
 
-**Jedna výhrada k poctivosti:** 0x520 se v každém logu objevilo jen 1–2×, takže
-velmi pomalý rámec s napětím nelze vyloučit se 100% jistotou. Ale všechny jeho
-bajty jsou mezi logy identické kromě čítače, takže je to nepravděpodobné.
+**One caveat for honesty:** 0x520 appeared only 1–2 times per log, so a very
+slow frame carrying voltage cannot be ruled out with total certainty. But all
+its bytes are identical between logs apart from a counter, which makes it unlikely.
 
-### Řešení pro 12 V: interní senzor displeje
+### Solution for 12 V: the display's internal sensor
 
-MFD15 je napájený z auta přes konektor B, takže **jeho vlastní napájecí napětí
-je to napětí, které chceš.** Interní senzor `displayVolt` ho měří přímo. To,
-že se DSS nepřipojí k displeji, nevadí — offline editace TRI na přidání
-interního senzoru stačí. Problém je jen v tom, že neznáme správné škálování
-pro Gen2 (Gen1 mělo 0–1023 → 0–53 V, což je jiný hardware).
+The MFD15 is powered from the car through connector B, so **its own supply
+voltage is the voltage you want.** The internal `displayVolt` sensor measures
+it directly. The fact that the DSS will not connect to the display does not
+matter — editing the TRI offline to add an internal sensor is enough. The only
+problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
+0–53 V, which is different hardware).
 
-**Zkalibruj si ho sám dvěma body:**
+**Calibrate it yourself with two points:**
 
-1. Přidej do TRI řádek s interním senzorem pro napětí, ale se **surovým
-   škálováním**: initCalc = 1, initOffset = 0, desetinná místa = 0, mapper
-   výstup = vstup přes rozsah 0–4095. Displej ti ukáže holé ADC číslo.
-2. Zapalování, motor stojí. Změř multimetrem napětí a zapiš si dvojici
-   (raw₁, V₁).
-3. Nastartuj, drž 3000 ot/min. Změř znovu → (raw₂, V₂).
-4. Spočítej `a = (V₂ − V₁) / (raw₂ − raw₁)` a `b = V₁ − a × raw₁`.
-5. Do TRI dej initCalc = a, initOffset = b, desetinná místa = 1.
+1. Add a TRI row for the internal voltage sensor but with **raw scaling**:
+   initCalc = 1, initOffset = 0, decimal places = 0, mapper output = input over
+   a 0–4095 range. The display then shows the bare ADC number.
+2. Ignition on, engine stopped. Measure the voltage with a multimeter and note
+   the pair (raw₁, V₁).
+3. Start the engine and hold 3000 rpm. Measure again → (raw₂, V₂).
+4. Compute `a = (V₂ − V₁) / (raw₂ − raw₁)` and `b = V₁ − a × raw₁`.
+5. Put initCalc = a, initOffset = b, decimal places = 1 into the TRI file.
 
-Dva body stačí, protože dělič napětí je lineární. Měř multimetrem **na
-konektoru displeje, ne na baterii** — na vedení k palubovce je úbytek
-několik desetin voltu a jinak bys kalibroval i cizí odpor do konstanty.
+Two points are enough because the divider is linear. Measure **at the display
+connector, not at the battery** — there are a few tenths of a volt of drop in
+the wiring to the dashboard, and otherwise that resistance would be baked into
+the constant.
 
-**Záložní varianta, kdyby interní senzor nefungoval:** MFD15 Gen2 má šest
-analogových vstupů. Dělič z 12 V do AIN1 a v TRI sloupec 18 (AIN active).
-Licenci Can Switching to nevyžaduje — ta je jen na *vysílání*.
+**Fallback if the internal sensor does not work:** the MFD15 Gen2 has six
+analogue inputs. Use a divider from 12 V into AIN1 and column 18 (AIN active)
+in the TRI file. This does not need the Can Switching licence — that one is
+only for *transmitting*.
 
-### Řešení pro 5 V: ať si ho převodník změří sám
+### Solution for 5 V: let the converter measure it itself
 
-Tohle je dobrý nápad a stojí to nula součástek. Háček je v tom, že PIC nemůže
-změřit vlastní napájení běžným způsobem — ADC měří proti VDD, takže by na
-VDD vždycky viděl plný rozsah.
+This is a good idea and costs zero components. The catch is that a PIC cannot
+measure its own supply the ordinary way — the ADC measures against VDD, so it
+would always see full scale on VDD.
 
-Obchází se to obráceně: **PIC18F25K80 má vestavěnou pevnou napěťovou referenci
-(FVR) 1,024 V, kterou umí ADC číst jako vstupní kanál.** Změříš tedy FVR proti
-VDD a dopočteš:
+It is worked around the other way round: **the PIC18F25K80 has a built-in fixed
+voltage reference (FVR) of 1.024 V that the ADC can read as an input channel.**
+So you measure the FVR against VDD and work backwards:
 
 ```
-VDD = 1,024 × 1023 / ADC_výsledek
+VDD = 1.024 × 1023 / ADC_result
 ```
 
-Nula externích součástek, nula pinů. (Ověř si to v datasheetu, až budeme psát
-firmware — jsem si tím dost jistý, ale registrové názvy pro K80 sérii chci
-mít ověřené, ne po paměti.)
+Zero external components, zero pins. (Worth confirming in the datasheet when we
+write the firmware — the principle is solid, but the register names for the K80
+series should be verified rather than recalled.)
 
-**Do rámců to přidám takhle:** 0x601 má volné bajty 6–7, tak tam půjde
-`VddConv` jako `raw × 0,01` = V. Rozsah 4,50–5,50 V, na displeji dvě
-desetinná místa.
+**Added to the frames like this:** 0x601 has bytes 6–7 free, so `VddConv` goes
+there as `raw × 0.01` = V. Range 4.50–5.50 V, two decimal places on the display.
 
-**A ano, CPU kapacity máš mraky.** PIC18F25K80 na 16 MHz zvládne 4 milion
-instrukcí za sekundu. Celý tvůj výpočet — dvě dělení pro spotřebu, jedno
-násobení pro výkon, pár klouzavých průměrů — je řádově tisíce instrukcí
-za 100 ms rámec. Využití bude v jednotkách procent. Jediné, co je opravdu
-těsné, je RAM (3,6 kB) kvůli 30 slotům klouzavého průměru pro dojezd, a i to
-je pohodlně v rozpočtu.
+**And yes, there is CPU capacity to spare.** A PIC18F25K80 at 16 MHz manages
+4 million instructions per second. The whole computation — two divisions for
+consumption, one multiplication for power, a few rolling averages — is on the
+order of thousands of instructions per 100 ms frame. Utilisation will be a few
+percent. The only genuinely tight resource is RAM (3.6 kB) because of the 30
+rolling-average slots for range, and even that fits comfortably.
 
 ---
 
-## Co ještě zbývá ověřit
+## Still to verify
 
-1. **Trip reset na přístrojovce** — sniff s resetem. Pokud se trip km vysílají,
-   naváže se na ně reset průměrné spotřeby. Pokud ne, licence Can Switching.
-2. **0x420 b3 = olej, nebo IAT?** — svižná jízda. IAT by spadl, olej ne.
-3. **AccelG: podélné, nebo příčné?** — zaparkovat napříč na svahu.
-4. **0x288 b5 a b6** — zátěžové, nedekódované. Kandidáti MAF, předstih,
-   vstřikovací čas. Nejrychleji porovnáním s měřenými bloky ve VCDS.
-5. **Kalibrace ztrátového momentu** — dva body už v logách máme (volnoběh
-   a 3000 ot/min v neutrálu), zbývá to dosadit.
+1. **Trip reset on the cluster** — a sniff with a reset. If trip kilometres are
+   broadcast, the average reset hooks onto them. If not, the Can Switching licence.
+2. **Is 0x420 b3 oil or IAT?** — a brisk drive. IAT would drop, oil would not.
+3. **AccelG: longitudinal or lateral?** — park across a slope.
+4. **0x288 b5 and b6** — load-dependent, undecoded. Candidates are MAF,
+   ignition advance and injection time. Fastest route is comparing against
+   VCDS measuring blocks.
+5. **Drag torque calibration** — both points are already in the logs (idle and
+   3000 rpm in neutral); they just need substituting in.

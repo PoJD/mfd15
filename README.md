@@ -1,57 +1,67 @@
 # mfd15
 
-Konfigurace displeje CANchecked MFD15 Gen2 pro VW New Beetle s motorem AQY
-(2,0 l / 85 kW, PQ34).
+Configuration for a CANchecked MFD15 Gen2 display in a VW New Beetle with the
+AQY engine (2.0 l / 85 kW, PQ34).
 
-Repozitář nemá build. Je v něm datový soubor `tri/S-AQY.TRI` a dokumentace
-k formátu.
+This repository has no build. It holds the data file `tri/S-AQY.TRI` and the
+documentation for the format.
 
-## Co soubor umí
+## What the file does
 
-16 senzorů. Devět z nich čte přímo hnací CAN auta a funguje samo o sobě:
+16 sensors. Nine of them read the car's powertrain CAN directly and work on
+their own:
 
 RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp
 
-Zbylých sedm plní převodník `canfuel` z rámců 0x600 a 0x601. Dokud převodník
-neexistuje, ukazují nulu — a je to tak správně:
+The other seven are filled by the `canfuel` converter from frames 0x600 and
+0x601. Until the converter exists they read zero — and that is correct:
 
 FuelNow, FuelAvg, FuelTank, Range, Torque, Power, VddConv
 
-## Jak se soubor nahraje
+## Uploading the file
 
-1. Připojit displej k počítači a spustit oDSS.
-2. Otevřít `tri/S-AQY.TRI` a nahrát do displeje.
-3. Aktivovat.
+1. Connect the display to a computer and start oDSS.
+2. Open `tri/S-AQY.TRI` and upload it to the display.
+3. Activate it.
 
-**Kontrola, že se to povedlo:** DisplayVolt musí ukazovat reálných ~12–14 V.
-To je hlavní důkaz — je to interní senzor displeje, takže žije i bez auta
-na sběrnici.
+**Confirming it worked:** DisplayVolt must show a realistic ~12–14 V. That is
+the key piece of evidence — it is an internal display sensor, so it is live
+even without a car on the bus.
 
-Když se soubor nenačte nebo se objeví senzor jménem „0", smazat první řádek
-`info;1.0;...` a nahrát znovu.
+If the file does not load, or a sensor named "0" appears, delete the first
+`info;1.0;...` line and upload it again.
 
-## Struktura
+## Validation
+
+```
+python tools/validate_tri.py tri/S-AQY.TRI
+python -m unittest discover -s tools -p "test_*.py"
+```
+
+## Layout
 
 ```
 tri/
-  S-AQY.TRI              produkční soubor, 16 senzorů
-  reference/             oficiální Gen2 soubory jako vzory
+  S-AQY.TRI              production file, 16 sensors
+  reference/             official Gen2 files used as examples
 docs/
-  sensors.md             popis všech senzorů a odkud pocházejí
-  tri-format.md          26 sloupců, význam každého
-  manual-mfd15-gen2.pdf  originální manuál
+  sensors.md             description of every sensor and where it comes from
+  tri-format.md          26 columns, meaning of each
+  manual-mfd15-gen2.pdf  original manual (in German/English as shipped)
+tools/
+  validate_tri.py        format checker used by CI
 ```
 
-## Pořadí řádků neměnit
+## Do not reorder the rows
 
-TRI se adresuje pořadím. Přeházení řádků změní, který senzor je na které
-pozici v konfiguraci displeje.
+A TRI file is addressed by position. Reordering rows changes which sensor sits
+where in the display configuration.
 
-## Související repozitáře
+## Related repositories
 
-- `canfuel` — firmware převodníku, plní rámce 0x600–0x602
-- `kicad` — deska převodníku
+- `canfuel` — converter firmware, fills frames 0x600–0x602
+- `kicad` — the converter board
 
 ## Licence
 
-Zatím neurčeno.
+Not decided yet.

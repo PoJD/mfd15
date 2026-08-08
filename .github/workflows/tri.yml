@@ -7,7 +7,7 @@ on:
 
 jobs:
   validate:
-    name: validace TRI
+    name: validate TRI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,14 +16,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: testy validatoru
+      - name: validator tests
         working-directory: tools
         run: python -m unittest discover -p 'test_*.py' -v
 
-      # TRI nema build, takze tohle je jedina automaticka kontrola, kterou
-      # muze mit. Chyba se jinak projevi az na displeji v aute.
-      - name: produkcni soubor
+      # A TRI file has no build, so this is the only automatic check it can
+      # get. An error otherwise only shows up on the display in the car.
+      - name: production file
         run: python tools/validate_tri.py tri/S-AQY.TRI
 
-      - name: referencni soubory
+      - name: reference files
         run: python tools/validate_tri.py tri/reference/*.TRI

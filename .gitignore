@@ -1,13 +1,13 @@
-# Python (validační skript v CI)
+# Python (the CI validation script)
 __pycache__/
 *.pyc
 
-# zálohy TRI z oDSS
+# TRI backups written by oDSS
 *.TRI.bak
 *.tri.bak
 *~
 
-# editory a OS
+# editors and OS
 .vscode/
 .idea/
 Thumbs.db

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Testy validatoru TRI.
+"""Tests for the TRI validator.
 
-Krome kontroly produkcniho souboru overuji, ze validator opravdu chyta --
-validator, ktery vzdycky rekne "ok", je horsi nez zadny.
+Besides checking the production file, these confirm the validator actually
+catches things -- a validator that always says "ok" is worse than none.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from validate_tri import AQY_ORDER, GEN2_INTERNAL, check
+from validate_tri import AQY_ORDER, GEN2_INTERNAL, check, expand
 
 REPO = Path(__file__).resolve().parent.parent
 TRI = REPO / "tri"
@@ -40,7 +40,7 @@ class TestRealFiles(unittest.TestCase):
             self.assertIn(line, text, sensor)
 
     def test_converter_channels_are_big_endian(self):
-        """Vlastni ramce 0x600/0x601 maji Format 0, ramce auta Format 1."""
+        """Our own frames 0x600/0x601 use Format 0, the car's frames Format 1."""
         lines = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig").splitlines()
         for line in lines[1:]:
             if not line.strip():
@@ -48,9 +48,29 @@ class TestRealFiles(unittest.TestCase):
             cols = line[:-1].split(";")
             can_id, fmt, name = cols[1].upper(), cols[2], cols[9]
             if can_id in ("0600", "0601", "0602"):
-                self.assertEqual(fmt, "0", f"{name} ma byt big endian")
+                self.assertEqual(fmt, "0", f"{name} should be big endian")
             elif can_id in ("0280", "01A0", "0480"):
-                self.assertEqual(fmt, "1", f"{name} ma byt little endian")
+                self.assertEqual(fmt, "1", f"{name} should be little endian")
+
+
+class TestGlobExpansion(unittest.TestCase):
+    """PowerShell passes wildcards through untouched, so we expand them."""
+
+    def test_expands_a_pattern(self):
+        found = expand([str(TRI / "reference" / "*.TRI")])
+        self.assertEqual(len(found), 2)
+        self.assertTrue(all(p.suffix.upper() == ".TRI" for p in found))
+
+    def test_plain_path_is_left_alone(self):
+        found = expand([str(TRI / "S-AQY.TRI")])
+        self.assertEqual(found, [TRI / "S-AQY.TRI"])
+
+    def test_unmatched_pattern_is_reported_not_dropped(self):
+        """A pattern matching nothing must still reach the "does not exist"
+        message rather than silently validating zero files."""
+        found = expand([str(TRI / "nope-*.TRI")])
+        self.assertEqual(len(found), 1)
+        self.assertFalse(found[0].exists())
 
 
 class TestValidatorCatchesProblems(unittest.TestCase):
@@ -63,38 +83,38 @@ class TestValidatorCatchesProblems(unittest.TestCase):
     def one(self, text, needle, name="test.TRI"):
         problems = self.check_text(text, name)
         self.assertTrue(any(needle in p for p in problems),
-                        f"cekal jsem '{needle}', dostal {problems}")
+                        f"expected '{needle}', got {problems}")
 
     def test_accepts_a_minimal_valid_file(self):
         self.assertEqual(self.check_text(f"{HEADER}\n{GOOD}\n"), [])
 
     def test_missing_header(self):
-        self.one(f"{GOOD}\n", "chybi hlavicka")
+        self.one(f"{GOOD}\n", "missing info; header")
 
     def test_missing_trailing_semicolon(self):
-        self.one(f"{HEADER}\n{GOOD[:-1]}\n", "nekonci strednikem")
+        self.one(f"{HEADER}\n{GOOD[:-1]}\n", "does not end with a semicolon")
 
     def test_wrong_column_count(self):
-        self.one(f"{HEADER}\n{GOOD[:-1]};extra;\n", "sloupcu misto 26")
+        self.one(f"{HEADER}\n{GOOD[:-1]};extra;\n", "columns instead of 26")
 
     def test_name_too_long(self):
         bad = GOOD.replace(";RPM;", ";ThisNameIsWayTooLong;")
-        self.one(f"{HEADER}\n{bad}\n", "max je 15")
+        self.one(f"{HEADER}\n{bad}\n", "the maximum is 15")
 
     def test_sensor_named_zero(self):
         bad = GOOD.replace(";RPM;", ";0;")
-        self.one(f"{HEADER}\n{bad}\n", "smaz prvni radek")
+        self.one(f"{HEADER}\n{bad}\n", "delete the first info; row")
 
     def test_bad_can_id(self):
         bad = GOOD.replace(";0280;", ";ZZZZ;")
-        self.one(f"{HEADER}\n{bad}\n", "neni platne CAN ID")
+        self.one(f"{HEADER}\n{bad}\n", "is not a valid CAN ID")
 
     def test_bad_format(self):
         bad = GOOD.replace(";0280;1;", ";0280;9;")
         self.one(f"{HEADER}\n{bad}\n", "Format '9'")
 
     def test_duplicate_names(self):
-        self.one(f"{HEADER}\n{GOOD}\n{GOOD}\n", "duplicitni nazvy")
+        self.one(f"{HEADER}\n{GOOD}\n{GOOD}\n", "duplicate sensor names")
 
     def test_placeholder_names_are_not_duplicates(self):
         empty = GOOD.replace(";RPM;", ";empty;")
@@ -103,7 +123,7 @@ class TestValidatorCatchesProblems(unittest.TestCase):
     def test_aqy_order_is_enforced_only_for_the_production_file(self):
         text = HEADER + "\n" + GOOD + "\n"
         self.assertEqual(self.check_text(text, "S-OTHER.TRI"), [])
-        self.one(text, "poradi senzoru", name="S-AQY.TRI")
+        self.one(text, "sensor order", name="S-AQY.TRI")
 
     def test_bom_is_tolerated(self):
         self.assertEqual(self.check_text(f"﻿{HEADER}\n{GOOD}\n"), [])

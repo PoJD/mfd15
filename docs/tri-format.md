@@ -1,92 +1,93 @@
-# Formát TRI
+# The TRI format
 
-Konfigurační soubor senzorů pro CANchecked MFD15. Prostý text, jeden řádek =
-jeden senzor, 26 sloupců oddělených středníkem. Řádek končí středníkem.
+A sensor configuration file for the CANchecked MFD15. Plain text, one line per
+sensor, 26 columns separated by semicolons. Every line ends with a semicolon.
 
-První řádek je hlavička `info;1.0;...`.
+The first line is the `info;1.0;...` header.
 
 ---
 
-## Sloupce
+## Columns
 
-| # | Sloupec | Význam |
+| # | Column | Meaning |
 |---|---|---|
-| 1 | Header | protokol; `0000` = bez protokolu |
-| 2 | CanID | hex bez prefixu; `FFF` = interní senzor displeje |
+| 1 | Header | protocol; `0000` = no protocol |
+| 2 | CanID | hex without a prefix; `FFF` = internal display sensor |
 | 3 | Format | 0 = big endian, 1 = little endian, 2 = VEMS, 4 = IEEE float |
-| 4 | Start byte | offset v rámci; u interních senzorů číslo kanálu |
-| 5 | Length | délka 1 / 2 / 4 bajty; u AIN místo toho tlumení 0–249 |
-| 6 | unsigned | 1 = bez znaménka |
-| 7 | shift Bit | posun doprava před aplikací masky |
-| 8 | CAN maska | hex, např. `007F`; `0000` = bez masky |
-| 9 | desetinná místa | kolik číslic za desetinnou čárkou zobrazit |
-| 10 | název | max 15 znaků |
-| 11 | initCalc | násobitel, aplikuje se na surovou hodnotu |
-| 12 | initOffset | přičte se po vynásobení |
-| 13 | Mappertype | 0 = lineární |
-| 14–17 | MapperInfo1–4 | body převodní křivky |
-| 18 | AIN active | 1 = senzor čte analogový vstup |
-| 19 | Min | dolní mez zobrazení |
-| 20 | Max | horní mez zobrazení |
-| 21 | RefSensor | index referenčního senzoru; 255 = žádný |
-| 22 | RefValue | referenční hodnota |
-| 23 | — | nepoužito |
-| 24 | Pop | vyskakovací upozornění při překročení mezí |
-| 25 | Blink | blikání při překročení mezí |
-| 26 | typ senzoru | 0 none, 1 tlak, 2 teplota, 3 rychlost, 4 spalovací poměr |
+| 4 | Start byte | offset within the frame; channel number for internal sensors |
+| 5 | Length | 1 / 2 / 4 bytes; for AIN sensors this is damping 0–249 instead |
+| 6 | unsigned | 1 = unsigned |
+| 7 | shift Bit | right shift applied before the mask |
+| 8 | CAN mask | hex, e.g. `007F`; `0000` = no mask |
+| 9 | decimal places | how many digits after the decimal point to show |
+| 10 | name | 15 characters maximum |
+| 11 | initCalc | multiplier, applied to the raw value |
+| 12 | initOffset | added after multiplying |
+| 13 | Mappertype | 0 = linear |
+| 14–17 | MapperInfo1–4 | points of the conversion curve |
+| 18 | AIN active | 1 = the sensor reads an analogue input |
+| 19 | Min | lower display limit |
+| 20 | Max | upper display limit |
+| 21 | RefSensor | index of a reference sensor; 255 = none |
+| 22 | RefValue | reference value |
+| 23 | — | unused |
+| 24 | Pop | pop-up warning when the limits are exceeded |
+| 25 | Blink | blink when the limits are exceeded |
+| 26 | sensor type | 0 none, 1 pressure, 2 temperature, 3 speed, 4 air/fuel ratio |
 
-Výsledná hodnota: `((raw >> shift) & maska) × initCalc + initOffset`
+Resulting value: `((raw >> shift) & mask) × initCalc + initOffset`
 
 ---
 
-## Interní senzory Gen2
+## Gen2 internal sensors
 
-CanID `FFF` znamená, že hodnota nepochází ze sběrnice, ale z displeje.
-Číslo kanálu je ve sloupci 4 (Start byte):
+A CanID of `FFF` means the value does not come from the bus but from the
+display itself. The channel number goes in column 4 (Start byte):
 
-| Kanál | Co to je |
+| Channel | What it is |
 |---|---|
-| 0–3 | AN1–AN4, analogové vstupy |
-| 4 | DisplayVolt — napájecí napětí displeje |
-| 7 | DisplayTemp — teplota displeje |
+| 0–3 | AN1–AN4, analogue inputs |
+| 4 | DisplayVolt — the display's supply voltage |
+| 7 | DisplayTemp — the display's temperature |
 | 10 | GearCalc |
 | 11 | FlexFuel |
 
-Tyto dva řádky se kopírují doslova. Jsou ověřené proti oficiálním Gen2
-souborům a zapisují čísla kratším způsobem než ostatní řádky — nepřeformátovat:
+These two rows are copied verbatim. They are verified against the official Gen2
+files and write their numbers in a shorter form than the other rows — do not
+reformat them:
 
 ```
 0;FFF;0;4;230;0;0;0;1;DisplayVolt;1;0;1;0;1023;0;56;1;10;16;255;0;0;0;0;0;
 0;FFF;0;7;0;0;0;0;0;DisplayTemp;1;0;0;0;0;0;0;1;0;100;255;0;0;0;0;2;
 ```
 
-**DisplayVolt je zároveň způsob, jak dostat na displej napětí baterie.**
-Na hnací CAN se napětí nevysílá (systematicky ověřeno, viz `sensors.md`),
-ale MFD15 je napájený z auta přes konektor B, takže jeho vlastní napájecí
-napětí je přesně to, co chceme.
+**DisplayVolt is also how battery voltage reaches the display.** Voltage is not
+broadcast on the powertrain CAN (verified systematically, see `sensors.md`),
+but the MFD15 is powered from the car through connector B, so its own supply
+voltage is exactly what we want.
 
-Škálování 0–1023 → 0–56 V je z oficiálních Gen2 souborů. Když nesedí,
-kalibruje se dvěma body — postup je v `sensors.md`.
+The 0–1023 → 0–56 V scaling comes from the official Gen2 files. If it does not
+match, calibrate with two points — the procedure is in `sensors.md`.
 
 ---
 
-## Reference
+## Reference files
 
-V `tri/reference/` jsou dva oficiální soubory jako vzory:
+`tri/reference/` holds two official files as examples:
 
 - `S-LINKG4X.TRI` — Link G4X
 - `S-MAXX720.TRI` — MaxxECU
 
-Hodí se hlavně na ověření, jak se zapisují interní senzory a jaké hodnoty
-jsou v sloupcích, které nikde nejsou popsané.
+They are mainly useful for confirming how internal sensors are written and what
+values go in the columns that are documented nowhere.
 
 ---
 
-## Známé problémy
+## Known problems
 
-**Senzor jménem „0" nebo se soubor vůbec nenačte.** Smazat první řádek
-`info;1.0;...` a nahrát znovu. Některé verze oDSS ho neumí přečíst.
+**A sensor named "0" appears, or the file does not load at all.** Delete the
+first `info;1.0;...` line and upload again. Some versions of oDSS cannot read it.
 
-**Název delší než 15 znaků** se tiše ořízne.
+**A name longer than 15 characters** is silently truncated.
 
-**Chybějící koncový středník** na řádku způsobí, že se řádek přeskočí.
+**A missing trailing semicolon** makes the display skip that line.
