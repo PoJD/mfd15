@@ -1,0 +1,29 @@
+name: tri
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: validace TRI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: testy validatoru
+        working-directory: tools
+        run: python -m unittest discover -p 'test_*.py' -v
+
+      # TRI nema build, takze tohle je jedina automaticka kontrola, kterou
+      # muze mit. Chyba se jinak projevi az na displeji v aute.
+      - name: produkcni soubor
+        run: python tools/validate_tri.py tri/S-AQY.TRI
+
+      - name: referencni soubory
+        run: python tools/validate_tri.py tri/reference/*.TRI

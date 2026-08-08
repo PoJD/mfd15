@@ -1,0 +1,14 @@
+# Python (validační skript v CI)
+__pycache__/
+*.pyc
+
+# zálohy TRI z oDSS
+*.TRI.bak
+*.tri.bak
+*~
+
+# editory a OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
