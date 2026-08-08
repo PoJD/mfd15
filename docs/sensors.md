@@ -276,15 +276,18 @@ matter — editing the TRI offline to add an internal sensor is enough. The only
 problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 0–53 V, which is different hardware).
 
-> **Outcome, 8 August 2026.** With the stock Gen2 scaling from the official
-> files (`0–1023 → 0–56 V`, the `DisplayVolt` row copied verbatim) the channel
-> reads correctly on the real display, so the two-point calibration below was
-> not needed. Worth keeping in mind that "reads correctly" here means the value
-> is in the expected 12–14 V band and tracks the engine running or not — it has
-> not been compared against a multimeter at the display connector. If a
-> fraction of a volt ever matters, do that comparison and use the procedure below.
+> **Settled, 8 August 2026. No calibration needed.** With the stock Gen2
+> scaling from the official files (`0–1023 → 0–56 V`, the `DisplayVolt` row
+> copied verbatim) the channel reads correctly on the real display:
+>
+> - ignition on, engine stopped → **~12.5 V**
+> - engine running → **~14 V**
+>
+> That is exactly the expected battery and alternator behaviour, so the
+> scaling is right and the two-point procedure below was never needed. It is
+> kept only in case a future display or firmware version scales differently.
 
-**Calibrate it yourself with two points:**
+**The two-point calibration, if it is ever needed:**
 
 1. Add a TRI row for the internal voltage sensor but with **raw scaling**:
    initCalc = 1, initOffset = 0, decimal places = 0, mapper output = input over

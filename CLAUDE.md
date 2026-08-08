@@ -21,6 +21,8 @@ through oDSS on 8 August 2026 and checked in the car.
   no converter exists. That is the correct result, not a fault.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
   row did not need deleting on this oDSS version.
+- DisplayVolt reads ~12.5 V with the ignition on and ~14 V with the engine
+  running, on the stock Gen2 scaling. That settles it — no calibration needed.
 
 Offline validation also passes: 16 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
@@ -168,5 +170,12 @@ The original measurement text is kept; the corrections sit alongside it.
 
 ## Related repositories
 
+Two siblings sit next to this one, with separate toolchains and separate GitHub
+remotes under `PoJD/`. The directory above them is deliberately not a git repo,
+so always run git inside one of the three.
+
 - `canfuel` — the firmware that fills frames 0x600–0x602
 - `kicad` — the converter board
+
+Installed on the development machine: git, gcc, make, Python 3.11. This repo
+needs none of them beyond Python.

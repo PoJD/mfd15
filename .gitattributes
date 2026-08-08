@@ -1,0 +1,12 @@
+# Normalise line endings so Windows checkouts stop warning about CRLF.
+* text=auto eol=lf
+
+# TRI files are frozen byte for byte. S-AQY.TRI was uploaded to a real display
+# and verified there, so git must never rewrite its line endings -- a clone has
+# to reproduce exactly the file that was tested. The reference files are vendor
+# originals and are left untouched for the same reason.
+*.TRI -text
+*.tri -text
+
+# Binary, never touch.
+*.pdf binary
