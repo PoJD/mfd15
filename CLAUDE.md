@@ -11,6 +11,32 @@ channels then read zero).
 
 ---
 
+## Current state — read this first
+
+**The TRI file is finished and validated.** `tri/S-AQY.TRI` holds all 16
+sensors in the correct order, with the two Gen2 internal rows verbatim.
+`tools/validate_tri.py` passes on it and on both reference files; 20 tests green.
+
+What has **not** happened yet: the file has never been uploaded to a real
+display. Everything so far is offline editing and validation. The upload and
+the checks that go with it are step D of the harness checklist, which lives in
+the `kicad` repo at `canfuel/docs/harness.md`.
+
+Nine channels will work the moment it is uploaded. Seven will read zero until
+the `canfuel` converter exists, and that is correct, not a fault.
+
+### Likely next work
+
+- Upload through oDSS and confirm DisplayVolt reads a realistic ~12–14 V.
+  That single number is the proof the file loaded correctly.
+- Calibrate DisplayVolt with two points if the stock 0–1023 → 0–56 V scaling
+  is off. The procedure is in `docs/sensors.md`.
+- Nothing here changes until the converter transmits 0x600–0x602. When it
+  does, the layout in `canfuel/docs/frames.md` and this TRI file have to be
+  changed together — that is the only coupling between the two repos.
+
+---
+
 ## Language
 
 **Everything in this repository is written in English** — documentation,
