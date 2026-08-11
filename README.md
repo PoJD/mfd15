@@ -9,9 +9,12 @@ documentation for the format.
 ## Status
 
 **Final.** `tri/S-AQY.TRI` was uploaded to the display and verified in the car
-on 8 August 2026. Every channel that reads the car's bus shows correct values;
-the channels fed by the `canfuel` converter read 0, as expected while that
-converter does not exist yet.
+on 8 August 2026. Every channel that reads the car's bus shows correct values.
+
+The seven channels fed by the `canfuel` converter read 0, which is correct and
+not a fault: the converter's firmware is written and builds, but its boards
+were only ordered on 2026-08-09 and nothing has been wired into the car yet.
+They will stay at 0 until one is.
 
 ## What the file does
 
@@ -66,8 +69,23 @@ where in the display configuration.
 
 ## Related repositories
 
-- `canfuel` — converter firmware, fills frames 0x600–0x602
-- `kicad` — the converter board
+This repository is useful **on its own** — nine of the sixteen sensors read the
+car's bus directly, so a Beetle with an MFD15 and no converter still gets rpm,
+speed, coolant, oil, tank level, acceleration and the raw fuel counter. The
+other seven need the converter, which is the other two repositories. Clone them
+side by side if you want the whole thing.
+
+| Repository | What it holds | Go there for |
+|---|---|---|
+| **`mfd15`** (this one) | the display configuration | `tri/S-AQY.TRI`, `docs/sensors.md` — what every gauge reads and where it comes from |
+| [`canfuel`](https://github.com/PoJD/canfuel) | the converter firmware | how the seven converter channels are computed; `docs/frames.md` is the layout this repository consumes |
+| [`kicad`](https://github.com/PoJD/kicad) | the converter board | `canfuel/docs/harness.md` — **how to make the loom and wire it into the car**, including the plug C pins this display supplies the converter from |
+
+**The coupling that can bite** is the layout of frames 0x600 and 0x601:
+`canfuel/docs/frames.md` defines it and `tri/S-AQY.TRI` consumes it. If one
+changes without the other, nothing errors — the display just shows plausible
+wrong numbers, which is worse. `canfuel/test/test_txframes.c` pins every offset
+against this file and quotes the relevant TRI lines in its header.
 
 ## Licence
 
