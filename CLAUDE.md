@@ -177,5 +177,12 @@ so always run git inside one of the three.
 - `canfuel` — the firmware that fills frames 0x600–0x602
 - `kicad` — the converter board
 
+**`canfuel/docs/refuted.md` collects the refuted hypotheses of all three
+repositories.** The two inaccuracies above are entries B7 and B8 there, and the
+byte once mislabelled as tank level is B2. It is one file rather than three so
+that a plausible idea somebody is about to have again can be found from any of
+them. When something here is settled *against*, add it there and keep the
+detail here.
+
 Installed on the development machine: git, gcc, make, Python 3.11. This repo
 needs none of them beyond Python.
