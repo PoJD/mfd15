@@ -32,18 +32,79 @@ The other seven are filled by the `canfuel` converter from frames 0x600 and
 
 FuelNow, FuelAvg, FuelTank, Range, Torque, Power, VddConv
 
+## Prerequisites
+
+**There is nothing to install.** That is worth stating plainly, because the
+obvious assumption is wrong: oDSS is not a desktop application. It is
+CANchecked's *online display setup software*, served by the display itself and
+opened in a browser — "the oDSS starts web-based without installation via the
+browser of your device" (`docs/manual-mfd15-gen2.pdf` §4).
+
+| For | What | Notes |
+|---|---|---|
+| uploading to the display | **any Wi-Fi device with a browser** | phone or laptop; the display serves oDSS over its own hotspot |
+| validating the file first | **Python 3.11+** | no third-party packages |
+
+```
+python tools/validate_tri.py tri/S-AQY.TRI     # needs no display at all
+```
+
+**Validation needs nothing but Python**, which is the point of it: the file is
+addressed by row position and a display will load a malformed one without
+complaining, so it is worth checking before it ever reaches the hardware.
+
+The display itself is a **CANchecked MFD15 Gen2**. The file is written for that
+generation — `docs/tri-format.md` explains what is generation-specific.
+
 ## Uploading the file
 
-1. Connect the display to a computer and start oDSS.
-2. Open `tri/S-AQY.TRI` and upload it to the display.
-3. Activate it.
+oDSS runs **in the display**, not on your computer. This duplicates part of
+`docs/manual-mfd15-gen2.pdf` on purpose — the manual describes the display,
+this describes getting *this* file into it.
 
-**Confirming it worked:** DisplayVolt must show a realistic ~12–14 V. That is
-the key piece of evidence — it is an internal display sensor, so it is live
-even without a car on the bus.
+**0. Download `tri/S-AQY.TRI` onto the device you will upload from** — a phone
+or a laptop, anything with Wi-Fi and a browser. Do it **now, before anything
+else**: from step 3 that device is joined to the display's hotspot and has no
+internet, so a file you have not already downloaded is a file you cannot get.
+
+**1. Power the display up.** Ignition on with the display plugged in — in
+practice that means **plug B**, which carries its 12 V. **The CAN pair is not
+needed for this.** Uploading a TRI file is a conversation between the browser
+and the display; it does not touch the car's bus at all. CAN only matters from
+step 6, when you want to see real values. So this can be done on a bench with
+any 12 V supply, off the car entirely.
+
+**2. Press both buttons on the display until a QR code appears.** This is what
+turns the Wi-Fi hotspot on — it is **off by default**, and it is the step that
+sends people looking for a USB port. It is needed **every time**: the hotspot
+does not stay on by itself.
+
+**3. Scan the QR code with the device from step 0.** It joins the display's
+hotspot. After the first time this step is optional — the phone will rejoin the
+network on its own — but **step 2 is not**, because there is no network to
+rejoin until the display is asked for one.
+
+**4. Open `http://192.168.4.1`** in the browser. That is oDSS.
+
+**5. Upload to device**, and pick the TRI file from step 0. Then activate it.
+
+**6. Check it against the car.** The CAN icon must be **green** — that is the
+display saying it is seeing the bus — and the sensor list must match the
+sixteen under *What the file does* above, showing live values for the nine that
+read the car directly. The seven fed by the converter read 0 until `canfuel` transmits, and
+that is correct rather than a fault.
+
+**Confirming the upload alone, with no car:** `DisplayVolt` must show a
+realistic ~12–14 V. It is an internal sensor of the display, so it is live
+without a bus, which makes it the one channel that separates *the file loaded*
+from *the wiring works*.
 
 If the file does not load, or a sensor named "0" appears, delete the first
 `info;1.0;...` line and upload it again.
+
+Anything beyond this — the buttons, the pages, the rest of oDSS — is in
+[`docs/manual-mfd15-gen2.pdf`](docs/manual-mfd15-gen2.pdf), §4 for the
+connection and §6 for oDSS itself.
 
 ## Validation
 

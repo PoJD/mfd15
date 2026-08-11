@@ -4,6 +4,16 @@ Display configuration for a VW New Beetle with the AQY engine. There is no
 build here, only the data file `tri/S-AQY.TRI`, which is uploaded to the
 display through oDSS.
 
+**oDSS is not a program anybody installs, and assuming otherwise wastes real
+time.** It is CANchecked's *online display setup software*, served by the
+display itself over a Wi-Fi hotspot and opened in a browser — the manual is
+explicit: "the oDSS starts web-based without installation via the browser of
+your device" (`docs/manual-mfd15-gen2.pdf` §4). The hotspot is **off by
+default**, which is the part that sends people looking for a USB port. Network
+`MFD15`, password `12345678`, address `http://192.168.4.1`, and two QR codes on
+the display do both steps. There is also a desktop tool of a similar name in
+circulation; it is not this, and it is not needed for anything here.
+
 A separate repo because the TRI file changes at a different rate than the
 firmware, and because it is the one part of the project somebody else with a
 Beetle and an MFD15 might want — it is usable even without the converter (six
