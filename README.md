@@ -80,4 +80,4 @@ example TRI files under `tri/reference/` are CANchecked's and are here for
 reference only; the licence above does not cover them and does not claim to.
 
 Questions, corrections and pull requests are welcome as issues on any of the
-three repositories.
+three repositories, or by email to Lubos Housa <luboshousa@gmail.com>.
