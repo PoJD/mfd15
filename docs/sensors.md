@@ -142,8 +142,16 @@ The seventh, #15, is a new addition described below.
   converter models it linearly against rpm, calibrated at two points: idle and
   3000 rpm in neutral. Both are already in the logs.
 - **Source scaling:** bytes 1, 4 and 7 of 0x280 carry three torque variants
-  (driver request / indicated / internal) at ~0.39 % per bit. The AQY maximum
-  is 172 Nm → 0.67 Nm per bit.
+  (driver request / indicated / internal) at ~0.39 % per bit — a percentage of
+  a reference torque held in the ECU's calibration, not Nm. **0.75 Nm per bit**
+  in the converter, and that is a decision, not a measurement. It was 0.67,
+  from "the AQY maximum is 172 Nm → 172/256", which is wrong on its own terms:
+  the signal is *indicated* torque (at 2940 rpm in neutral the crank makes
+  nothing and the byte still reads 37), so its full scale is the maximum
+  indicated torque — the rated crank figure plus drag — and scaling it to the
+  crank maximum before subtracting drag counted the friction twice. At 0.67 the
+  display could never reach the factory 85 kW. The reasoning and the
+  0.745–0.773 bracket live in `canfuel/docs/frames.md`.
 - **Realism:** the ME7 does not measure torque, it models it from air mass per
   stroke with corrections for ignition advance and lambda. The 100 % figure is
   a calibration constant in the ECU that an ordinary chip tune does not change.
