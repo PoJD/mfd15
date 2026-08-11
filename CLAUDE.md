@@ -14,7 +14,9 @@ channels then read zero).
 ## Current state — read this first
 
 **`tri/S-AQY.TRI` is final and verified on the real display.** It was uploaded
-through oDSS on 8 August 2026 and checked in the car.
+through oDSS on 8 August 2026 and checked in the car, and re-checked on
+2026-08-11 on the rebuilt harness — the display runs correctly on the new loom
+with the CAN pair on DuPont jumpers standing in for the converter board.
 
 - All nine channels that read the car's bus directly show correct values.
 - The seven channels fed by the converter read 0, exactly as expected while
@@ -26,11 +28,15 @@ through oDSS on 8 August 2026 and checked in the car.
 
 Offline validation also passes: 16 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
-reference files, 20 tests green.
+reference files, all tests green.
 
 ### There is no outstanding work in this repo
 
 The TRI file is done. Do not change it speculatively.
+
+**The project's plan lives in `canfuel/docs/install.md`** and step 2 — the one
+this repository owns — is done. Nothing here tracks "what next"; that document
+does, for all three repositories.
 
 The one thing that will require a change is the converter going live: when
 `canfuel` starts transmitting 0x600–0x602, the layout in

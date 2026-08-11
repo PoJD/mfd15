@@ -12,9 +12,13 @@ documentation for the format.
 on 8 August 2026. Every channel that reads the car's bus shows correct values.
 
 The seven channels fed by the `canfuel` converter read 0, which is correct and
-not a fault: the converter's firmware is written and builds, but its boards
-were only ordered on 2026-08-09 and nothing has been wired into the car yet.
-They will stay at 0 until one is.
+not a fault: the converter's firmware is written and builds, and the harness is
+built and in the car, but the boards were only ordered on 2026-08-09 and none
+has been populated yet. They will stay at 0 until one is.
+
+**The whole build path, across all three repositories, is
+[`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md).**
+The step this repository owns is step 2, and it is done.
 
 ## What the file does
 
