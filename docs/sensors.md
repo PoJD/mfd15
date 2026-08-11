@@ -20,7 +20,7 @@ display. State as of 2 August 2026.
 | 9 | Power | instantaneous power in kW | 0x601 b0-1 | ❌ needs converter |
 | 10 | OilTemp | oil temperature | 0x420 b3 | ✅ yes |
 | 11 | TankL | fuel in tank, raw from the car | 0x320 b2 | ✅ yes |
-| 12 | AccelG | longitudinal/lateral acceleration | 0x5A0 b0 | ✅ yes |
+| 12 | AccelG | lateral (cornering) acceleration | 0x5A0 b0 | ✅ yes |
 | 13 | FuelCntRaw | raw fuel counter from the ECU | 0x480 b2-3 | ✅ yes |
 | 14 | DisplayVolt | display supply voltage (= car's 12 V) | MFD internal sensor | ✅ yes, after calibration |
 | 15 | VddConv | the 5 V rail as the converter sees it | 0x601 b6-7 | ❌ needs converter |
@@ -200,16 +200,31 @@ The seventh, #15, is a new addition described below.
   when debugging and when verifying the value really is in litres (refuel a
   known amount and compare).
 
-## 12. AccelG — acceleration
+## 12. AccelG — lateral acceleration
 
 - **Source:** 0x5A0 (Bremse 2) byte 0
 - **Formula:** `(raw − 127) ÷ 100` = G
-- **Yes, it is acceleration**, but note: **it is not certain whether
-  longitudinal or lateral.** The source does not say. The data shows a stable
-  127–128 (= 0 G) at rest, 110–153 while driving (−0.17 to +0.26 G) and 118–119
-  after stopping. That offset after stopping is either the slope of the ground
-  (longitudinal sensor) or a permanent bias. If it is longitudinal, parking
-  across a slope settles it reliably.
+- **It is lateral — cornering, not braking. Measured in the car on
+  2026-08-11** and no longer an assumption. Circling at full lock, 15–20 km/h:
+  **+0.2 to +0.5 G turning left, the same magnitudes negative turning right**,
+  while pulling away and braking move it only a few hundredths. The sign
+  inversion is what settles it; neither a standing bias nor road camber
+  reverses when you turn the other way.
+- **Positive is a left turn**, consistent with ISO 8855 vehicle axes. Nothing
+  needs inverting.
+- **The scale checks out too**, which was a by-product of the same test. Full
+  lock on a Beetle is a radius of about 5.5 m, and v²/r gives 0.20 G at
+  12 km/h and 0.51 at 19 — exactly the range measured. So the ÷100 is right in
+  magnitude, not merely in shape.
+- Earlier data, now explained rather than puzzling: a stable 127–128 (= 0 G) at
+  rest, 110–153 while driving, 118–119 after stopping. The offset after
+  stopping is a permanent bias or road camber — it is not longitudinal tilt,
+  because the axis is not longitudinal.
+- **Historical note:** parking across a slope was the suggested test here for a
+  long time. It works in principle and is a poor test — the deflection is
+  sin(tilt), so a 6 % driveway gives 0.06 G against a 0.01 G resolution. The
+  full derivation and the two flat-ground tests that replaced it are in
+  `canfuel/docs/can-decoding.md` question 5.
 - **Historical note:** this byte was previously mislabelled as tank level.
   That was wrong and has been corrected.
 
@@ -265,7 +280,7 @@ convert to a voltage under some sensible scaling.
 |---|---|---|
 | 0x050 b2, b3 | 112 → 128 | 16 unique values in steps of 16 = a rolling counter/checksum |
 | 0x320 b0 | 64 → 69 | door bit mask |
-| 0x5A0 b0 | 119 → 128 | acceleration (AccelG) |
+| 0x5A0 b0 | 119 → 128 | lateral acceleration (AccelG) |
 
 That also makes sense theoretically: on the PQ34 the instrument cluster
 measures battery voltage for itself and does not broadcast it on the powertrain
@@ -351,16 +366,31 @@ rolling-average slots for range, and even that fits comfortably.
 None of these block the TRI file, which is finished. They are open questions
 about the signals themselves and belong to the `canfuel` work.
 
-1. **Trip reset on the cluster** — a sniff with a reset. Superseded for the
-   purpose of resetting the average, which is now tied to refuelling, but the
-   question of whether trip kilometres are broadcast is still unanswered.
-   `06_trip_reset.txt` was recorded for it and has not been analysed.
-2. **Is 0x420 b3 oil or IAT?** — a brisk drive. IAT would drop, oil would not.
-   `07_accel.txt` argues for oil (the value held at 75.75 → 76.5 °C during the
-   pull-away) but the run was only 16 s, so it is not conclusive.
-3. **AccelG: longitudinal or lateral?** — park across a slope.
+1. ~~**Trip reset on the cluster**~~ — **retired 2026-08-11.**
+   `06_trip_reset.txt` has been analysed since: all eight bytes of the 0x5D8
+   candidate are constant for the whole 135 s, and a sweep of every byte of all
+   fourteen broadcast identifiers turns up nothing that grows and falls. The
+   average is reset on refuelling instead. Whether trip kilometres are
+   broadcast at all is still unproven — the recording only covers 124.6 m,
+   which is one tick of a 0.1 km counter.
+2. ~~**Is 0x420 b3 oil or IAT?**~~ — **closed 2026-08-11: it is oil.** Reading
+   all seven fixtures in the order the coolant says they were recorded shows a
+   warm-up curve that lags the coolant (21 → 65 °C), peaks on the one log with
+   air actually moving through the engine, and reads 255 with the engine off.
+   An intake sensor does none of those.
+3. ~~**AccelG: longitudinal or lateral?**~~ — **closed 2026-08-11: lateral.**
+   Measured in the car by circling at full lock; see #12 above and
+   `canfuel/docs/can-decoding.md` question 5.
 4. **0x288 b5 and b6** — load-dependent, undecoded. Candidates are MAF,
    ignition advance and injection time. Fastest route is comparing against
    VCDS measuring blocks.
-5. **Drag torque calibration** — both points are already in the logs (idle and
-   3000 rpm in neutral); they just need substituting in.
+5. ~~**Drag torque calibration**~~ — **closed in canfuel phase 1.**
+   `drag [Nm] = 19.52 + 0.00028 × rpm`, reproducing both logged points exactly.
+   It is a straight line through two *idling* measurements and so says nothing
+   about drag under load; that part is still open and belongs to canfuel
+   phase 6.
+
+**`canfuel/docs/can-decoding.md` is the authority for this list** — it carries
+the full version with the procedure that would close each one. What is still
+open there: the 0x480 frame period, 0x288 b5/b6, the torque byte's scale, and
+the fixture timestamps.
