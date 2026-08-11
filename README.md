@@ -71,4 +71,13 @@ where in the display configuration.
 
 ## Licence
 
-Not decided yet.
+[Apache License 2.0](LICENSE), covering `tri/S-AQY.TRI`, the documentation and
+the tools. Use it, change it, adapt it to your own car — the only obligations
+are to keep the copyright and licence notices and to say what you changed.
+
+**`NOTICE` lists what is not ours.** The MFD15 manual and the two official
+example TRI files under `tri/reference/` are CANchecked's and are here for
+reference only; the licence above does not cover them and does not claim to.
+
+Questions, corrections and pull requests are welcome as issues on any of the
+three repositories.

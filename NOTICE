@@ -1,0 +1,30 @@
+mfd15 — CANchecked MFD15 Gen2 configuration for a VW New Beetle (AQY)
+Copyright 2026 PoJD (https://github.com/PoJD)
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file.
+
+The work covered by that licence is `tri/S-AQY.TRI` and the documentation in
+`docs/` and `tools/` — the sensor definitions written for this car, and what
+was worked out about the file format.
+
+================================================================================
+Third-party material redistributed in this repository
+================================================================================
+
+The files listed below are NOT covered by the Apache License 2.0. They remain
+the copyright of their respective owners and are included here only for
+reference. No licence to them is granted by this repository, and nothing in
+the LICENSE file should be read as claiming any right in them.
+
+  docs/manual-mfd15-gen2.pdf
+      CANchecked — MFD15 Gen2 manual, as shipped with the display.
+
+  tri/reference/S-LINKG4X.TRI
+  tri/reference/S-MAXX720.TRI
+      CANchecked — official example configuration files, shipped with the
+      display software. They are kept as worked examples of the format; the
+      production file S-AQY.TRI was written from scratch for this car and
+      does not derive from them.
+
+The TRI file format itself is CANchecked's. `docs/tri-format.md` documents what
+the columns do, which is an observation about a format and not a copy of it.
