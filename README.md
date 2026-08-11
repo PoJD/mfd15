@@ -75,6 +75,10 @@ speed, coolant, oil, tank level, acceleration and the raw fuel counter. The
 other seven need the converter, which is the other two repositories. Clone them
 side by side if you want the whole thing.
 
+**Building the whole thing?** [`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md)
+is the path from three clones to a working device, in the order it has to
+happen. Uploading the TRI file — the part that lives here — is step 2 of seven.
+
 | Repository | What it holds | Go there for |
 |---|---|---|
 | **`mfd15`** (this one) | the display configuration | `tri/S-AQY.TRI`, `docs/sensors.md` — what every gauge reads and where it comes from |
