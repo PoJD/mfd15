@@ -1,6 +1,6 @@
 # mfd15 — CANchecked MFD15 Gen2 display and its TRI file
 
-Display configuration for a VW New Beetle with the AQY engine. There is no
+Display configuration for a VW PQ34 car with the AQY engine. There is no
 build here, only the data file `tri/S-AQY.TRI`, which is uploaded to the
 display through oDSS.
 

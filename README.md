@@ -1,6 +1,6 @@
 # mfd15
 
-Configuration for a CANchecked MFD15 Gen2 display in a VW New Beetle with the
+Configuration for a CANchecked MFD15 Gen2 display in a VW PQ34 car with the
 AQY engine (2.0 l / 85 kW, PQ34).
 
 This repository has no build. It holds the data file `tri/S-AQY.TRI` and the
