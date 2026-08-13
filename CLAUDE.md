@@ -21,12 +21,11 @@ channels then read zero).
 
 ---
 
-## Current state — read this first
+## What this repository holds
 
-**`tri/S-AQY.TRI` is final and verified on the real display.** It was uploaded
-through oDSS on 8 August 2026 and checked in the car, and re-checked on
-2026-08-11 on the rebuilt harness — the display runs correctly on the new loom
-with the CAN pair on DuPont jumpers standing in for the converter board.
+**`tri/S-AQY.TRI` is final and verified on a real display**, uploaded through
+oDSS and checked in the vehicle, including on the rebuilt harness with the CAN
+pair on jumpers standing in for the converter board.
 
 - All nine channels that read the car's bus directly show correct values.
 - The seven channels fed by the converter read 0, exactly as expected while

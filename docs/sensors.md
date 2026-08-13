@@ -1,7 +1,7 @@
 # Sensors in S-AQY.TRI — full description
 
-Beetle AQY (2.0 l / 85 kW), powertrain CAN at 500 kbps, CANchecked MFD15 Gen2
-display. State as of 2 August 2026.
+VW PQ34 with the AQY engine (2.0 l / 85 kW), powertrain CAN at 500 kbps.
+*(Written for, and verified on, a CANchecked MFD15 Gen2 display.)*
 
 ---
 
@@ -28,9 +28,9 @@ display. State as of 2 August 2026.
 Yes, six values will read zero until the converter exists — those are #4–#9.
 The seventh, #15, is a new addition described below.
 
-> **Verified on hardware, 8 August 2026.** The file was uploaded through oDSS
-> and checked in the car. Every channel marked ✅ shows correct values, and the
-> converter-fed channels read 0 as expected. The table above is no longer a
+> **Verified on hardware.** The file has been uploaded through oDSS and checked
+> in the vehicle. Every channel marked ✅ shows correct values, and the
+> converter-fed channels read 0 as expected. The table above is not a
 > prediction.
 
 ---
@@ -204,8 +204,8 @@ The seventh, #15, is a new addition described below.
 
 - **Source:** 0x5A0 (Bremse 2) byte 0
 - **Formula:** `(raw − 127) ÷ 100` = G
-- **It is lateral — cornering, not braking. Measured in the car on
-  2026-08-11** and no longer an assumption. Circling at full lock, 15–20 km/h:
+- **It is lateral — cornering, not braking. Measured**, not assumed. Circling
+  at full lock, 15–20 km/h:
   **+0.2 to +0.5 G turning left, the same magnitudes negative turning right**,
   while pulling away and braking move it only a few hundredths. The sign
   inversion is what settles it; neither a standing bias nor road camber
@@ -299,7 +299,7 @@ matter — editing the TRI offline to add an internal sensor is enough. The only
 problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 0–53 V, which is different hardware).
 
-> **Settled, 8 August 2026. No calibration needed.** With the stock Gen2
+> **Settled. No calibration needed.** With the stock Gen2
 > scaling from the official files (`0–1023 → 0–56 V`, the `DisplayVolt` row
 > copied verbatim) the channel reads correctly on the real display:
 >
@@ -366,20 +366,20 @@ rolling-average slots for range, and even that fits comfortably.
 None of these block the TRI file, which is finished. They are open questions
 about the signals themselves and belong to the `canfuel` work.
 
-1. ~~**Trip reset on the cluster**~~ — **retired 2026-08-11.**
+1. ~~**Trip reset on the cluster**~~ — **retired.**
    `06_trip_reset.txt` has been analysed since: all eight bytes of the 0x5D8
    candidate are constant for the whole 135 s, and a sweep of every byte of all
    fourteen broadcast identifiers turns up nothing that grows and falls. The
    average is reset on refuelling instead. Whether trip kilometres are
    broadcast at all is still unproven — the recording only covers 124.6 m,
    which is one tick of a 0.1 km counter.
-2. ~~**Is 0x420 b3 oil or IAT?**~~ — **closed 2026-08-11: it is oil.** Reading
+2. ~~**Is 0x420 b3 oil or IAT?**~~ — **closed: it is oil.** Reading
    all seven fixtures in the order the coolant says they were recorded shows a
    warm-up curve that lags the coolant (21 → 65 °C), peaks on the one log with
    air actually moving through the engine, and reads 255 with the engine off.
    An intake sensor does none of those.
-3. ~~**AccelG: longitudinal or lateral?**~~ — **closed 2026-08-11: lateral.**
-   Measured in the car by circling at full lock; see #12 above and
+3. ~~**AccelG: longitudinal or lateral?**~~ — **closed: lateral.**
+   Measured by circling at full lock; see #12 above and
    `canfuel/docs/can-decoding.md` question 5.
 4. **0x288 b5 and b6** — load-dependent, undecoded. Candidates are MAF,
    ignition advance and injection time. Fastest route is comparing against
