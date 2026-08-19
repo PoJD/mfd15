@@ -200,6 +200,41 @@ converter will meet it.
 
 ---
 
+## ⚠ The display loses its sensor definitions when pages are changed
+
+**Observed repeatedly, and it is not this file.** Changing which values a page
+shows sometimes leaves the display without its sensor definitions: the
+configuration of the *other* pages is scrambled with it, and **RPM disappearing
+is the reliable tell** — it is the first row in the file and the first thing
+missed.
+
+**The fix is to upload the TRI file again**, and it works every time.
+
+**So do that as a matter of course after changing pages.** Re-uploading takes a
+minute and costs nothing; diagnosing it from scratch each time costs an
+afternoon, and the failure is quiet — a page that reads zero looks like a dead
+sensor, not like a lost definition.
+
+Two things make it clear the fault is in the display rather than here:
+
+- It happened the same way with **CANchecked's own TRI file**, not just
+  `S-AQY.TRI`.
+- It happened the same way **with no converter fitted at all**, when six
+  channels were reading zero because nothing was sending them.
+
+**What is NOT established is the mechanism.** Whether the display rewrites its
+sensor table when it saves a page layout, loses an index into it, or drops the
+table entirely — no idea. Only the correlation is known: change a page, and
+sometimes the definitions go. Keep that distinction if this is ever raised with
+CANchecked; it is the second such finding, alongside the CAN error burst above,
+and both are correlations rather than mechanisms.
+
+It is at least *consistent* with the display addressing sensors by position,
+which is why rows here are appended and never inserted — but that is a reason
+to stay careful, not evidence about the cause.
+
+---
+
 ## When the file does not load
 
 If the TRI file does not load, or a sensor named "0" appears, delete the first

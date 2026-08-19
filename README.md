@@ -120,6 +120,19 @@ Anything beyond this — the buttons, the pages, the rest of oDSS — is in
 [`docs/manual-mfd15-gen2.pdf`](docs/manual-mfd15-gen2.pdf), §4 for the
 connection and §6 for oDSS itself.
 
+## After changing pages, upload the file again
+
+**The display sometimes loses its sensor definitions when a page's contents are
+changed**, taking the other pages' configuration with it. RPM vanishing is the
+tell. Uploading `tri/S-AQY.TRI` again fixes it every time, so upload it again
+as a matter of course after any page change rather than waiting to notice.
+
+It is the display's own fault, not this file's: the same thing happens with
+CANchecked's own TRI files and with no converter connected. `CLAUDE.md` has
+what was observed and what is still unexplained.
+
+---
+
 ## Validation
 
 ```
