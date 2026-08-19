@@ -33,7 +33,13 @@ oDSS and checked in the vehicle with the converter fitted and transmitting.
   jumper (JP1) is fitted, because that frame is not transmitted without it.
   Zero there is a missing jumper, not a fault.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
-  row did not need deleting on this oDSS version.
+  row did not need deleting on this firmware.
+
+**There is no oDSS version separate from the display's.** oDSS is served by the
+display itself, so it ships inside the display firmware and the firmware
+version is the only version there is — worth knowing before hunting for one, or
+before being asked for one. **This file is verified against display firmware
+4.112.**
 - DisplayVolt reads ~12.5 V with the ignition on and ~14 V with the engine
   running, on the stock Gen2 scaling. That settles it — no calibration needed.
 
@@ -238,7 +244,8 @@ to stay careful, not evidence about the cause.
 ## When the file does not load
 
 If the TRI file does not load, or a sensor named "0" appears, delete the first
-`info;1.0;...` line and upload it again. It is a known quirk of some oDSS versions.
+`info;1.0;...` line and upload it again. It is a known quirk of some display
+firmware versions; it did not occur on 4.112.
 
 ---
 
