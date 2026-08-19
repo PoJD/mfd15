@@ -72,6 +72,9 @@ The seventh, #15, is a new addition described below.
 - **Source:** 0x288 (Motor 3) byte 1
 - **Formula:** `raw × 0.75 − 48` = °C
 - **Fault value:** 0xFF
+  Same formula, so it would reach the display as 143 °C the way OilTemp's does
+  — see #10. No log has ever shown 0x288 b1 sending it, warm or cold, engine
+  running or not.
 - **Verified:** a monotonic warm-up curve across all five logs,
   68 → 90 → 94.5 → 99 → 100.5 °C. Also confirmed by an external source
   (the OSM wiki on VW-CAN).
@@ -172,17 +175,26 @@ The seventh, #15, is a new addition described below.
 - **Formula:** `raw × 0.75 − 48` = °C
 - **Fault value:** 0xFF (in log 01, ignition on without the engine running, it
   is exactly 0xFF; in log 05 at 3000 rpm it reads 116 → 39 °C)
-- **⚠️ Unconfirmed:** the OSM VW-CAN wiki says 0x420 b3 is oil. The car is not
-  expected to have an oil temperature sensor. Across the session the value rose
-  21 → 39 → 61 → 66 °C, a slower rise than the coolant — which is an argument
-  **for** oil. IAT (intake air) would track the engine bay temperature while
-  standing and would drop when accelerating. A brisk drive settles it.
-
-  > **Phase 0 update.** `07_accel.txt` was recorded for exactly this. The
-  > temperature holds at 75.75 → 76.5 °C during the acceleration and does not
-  > fall, which argues for oil — but the run was only 16 s, so it is still not
-  > conclusive.
-
+- **The fault value reaches the display as a maximum of 143 °C.**
+  `0xFF × 0.75 − 48 = 143.25`, shown as 143 because the row carries no decimal
+  places, and the display latches it into its recorded maximum for OilTemp. It
+  is not a temperature. **Nothing can filter it out here:** the display reads
+  0x420 b3 straight off the bus rather than through the converter, and the TRI
+  format has no validity gate — columns 19/20 are warning limits, not a range
+  the display will reject a value outside of (`tri-format.md`). So reset the
+  min/max on the display once the engine is running, or read 143 for what it
+  is. It does not happen at every ignition-on: `01_ign_only` carries 0xFF in
+  all 20 frames of 0x420, while `08_ign_only_z1` reads 0x85 in the same state.
+- **It is oil and not intake air.**
+  Read in the order the coolant says the fixtures were recorded, 0x420 b3 is a
+  warm-up curve lagging the coolant — 21 → 65 °C while the coolant goes
+  68 → 99 °C — it is *highest* in `03_drive`, the one log with air actually
+  moving through the engine, where an intake temperature would fall, and it
+  reads 255 with the ignition on and the engine off, which a thermistor the ECU
+  can read whenever it is awake would not. The table is in question 2 below and
+  in `canfuel/docs/can-decoding.md` question 4; `canfuel/docs/refuted.md` B3 is
+  the entry. `07_accel` on its own does not settle it — 16 s of acceleration is
+  too short to separate the two.
 - **Bytes 1 and 2 of 0x420** are, according to the source, ambient temperature
   `(raw−100)/2`; both read 0x00 here, so there is no ambient temperature sensor.
 
