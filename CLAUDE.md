@@ -171,6 +171,35 @@ only automatic check a file with no build can have.
 
 ---
 
+## ⚠ Operating oDSS puts errors on the CAN bus
+
+**Observed in the vehicle, with the converter fitted:** uploading a TRI file,
+and changing the display's configuration, each produced a burst of CAN errors.
+The converter's `LED_CAN` blinked for a few seconds, its latched `UNHEALTHY`
+flag came on, and it stayed on until the next power-up. The error counters
+walked back to zero on their own straight afterwards and nothing was lost.
+
+Three things follow, in order of how much they are worth:
+
+- **Do not diagnose the converter for it.** `UNHEALTHY` set with the error
+  counters at zero, after somebody has been in oDSS, is very probably this.
+  Power-cycle before reading that flag as a verdict on anything.
+- **It cannot happen while driving.** oDSS needs the display's Wi-Fi hotspot
+  and the hotspot is off by default, so this belongs to setup and to nothing
+  else.
+- **What the display actually does is NOT established** — whether it transmits
+  malformed frames, resets its own CAN controller, or floods the bus while it
+  reads or writes its configuration. Only the correlation is known, taken by
+  watching the converter's 0x603 diagnostic frame while operating oDSS. **If
+  this is ever raised with CANchecked, raise the correlation and not a
+  mechanism.** A capture with `canfuel/tools/usbtin_capture.py` across an
+  upload would say what actually goes onto the wire, and nobody has run one.
+
+`canfuel/docs/frames.md` carries the same note where somebody debugging the
+converter will meet it.
+
+---
+
 ## When the file does not load
 
 If the TRI file does not load, or a sensor named "0" appears, delete the first
