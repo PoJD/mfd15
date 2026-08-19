@@ -9,10 +9,12 @@ documentation for the format.
 ## Status
 
 **Final.** `tri/S-AQY.TRI` has been uploaded to the display and verified in the
-vehicle. Every channel that reads the vehicle's bus shows correct values.
+vehicle, with the converter fitted and transmitting. Every channel that reads
+the vehicle's bus shows correct values, and so do the converter's.
 
-The seven channels fed by the `canfuel` converter read 0 until a converter is
-fitted and transmitting. That is the correct result, not a fault.
+The twelve channels fed from frame 0x603 read 0 unless the converter's `DBG_EN`
+jumper (JP1) is fitted — that frame is not transmitted at all without it. Zero
+there is a missing jumper, not a fault.
 
 **The whole build path, across all three repositories, is
 [`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md).**
@@ -20,15 +22,29 @@ The step this repository owns is step 2, and it is done.
 
 ## What the file does
 
-16 sensors. Nine of them read the car's powertrain CAN directly and work on
-their own:
+31 sensors. Nine of them read the car's powertrain CAN directly and work on
+their own, with no converter present at all:
 
 RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp
 
-The other seven are filled by the `canfuel` converter from frames 0x600 and
-0x601. Until the converter exists they read zero — and that is correct:
+Ten are filled by the `canfuel` converter from frames 0x600, 0x601 and 0x602,
+which it transmits whenever it is powered:
 
-FuelNow, FuelAvg, FuelTank, Range, Torque, Power, VddConv
+FuelNow, FuelAvg, FuelTank, Range, Torque, Power, Flow, VddConv, TripFuel,
+TripDist
+
+The remaining twelve decode the converter's diagnostic frame 0x603, which is
+**only transmitted while JP1 is fitted**:
+
+CanRxErr, CanTxErr, ComStat, CanOK, Silent, Unhealthy, DataLive, PersistOK,
+UnhealthyNow, ResetCause, TxRefused, Uptime
+
+`canfuel/docs/frames.md` is the authority on every layout above, and the flag
+and reset-cause bits are tabulated there.
+
+**Rows are appended, never inserted.** A TRI file is addressed by position and
+the display is already configured against the first sixteen; putting a new
+sensor in the middle silently repoints every gauge after it.
 
 ## Prerequisites
 
@@ -115,7 +131,7 @@ python -m unittest discover -s tools -p "test_*.py"
 
 ```
 tri/
-  S-AQY.TRI              production file, 16 sensors
+  S-AQY.TRI              production file, 31 sensors
   reference/             official Gen2 files used as examples
 docs/
   sensors.md             description of every sensor and where it comes from

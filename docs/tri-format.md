@@ -17,7 +17,7 @@ The first line is the `info;1.0;...` header.
 | 4 | Start byte | offset within the frame; channel number for internal sensors |
 | 5 | Length | 1 / 2 / 4 bytes; for AIN sensors this is damping 0–249 instead |
 | 6 | unsigned | 1 = unsigned |
-| 7 | shift Bit | right shift applied before the mask |
+| 7 | shift Bit | right shift applied **after** the mask — see below |
 | 8 | CAN mask | hex, e.g. `007F`; `0000` = no mask |
 | 9 | decimal places | how many digits after the decimal point to show |
 | 10 | name | 15 characters maximum |
@@ -35,7 +35,26 @@ The first line is the `info;1.0;...` header.
 | 25 | Blink | blink when the limits are exceeded |
 | 26 | sensor type | 0 none, 1 pressure, 2 temperature, 3 speed, 4 air/fuel ratio |
 
-Resulting value: `((raw >> shift) & mask) × initCalc + initOffset`
+Resulting value: `((raw & mask) >> shift) × initCalc + initOffset`
+
+**The mask comes first and the shift second, which is the opposite of the
+obvious reading.** Both official reference files agree on it and one of them
+settles it outright: `S-LINKG4X.TRI` carries
+
+```
+0;38;1;7;1;1;4;F0;1;CruiseStatus;...
+```
+
+— a **one-byte** field with shift 4 and mask `F0`. Under `(raw >> 4) & 0xF0`
+that is bits 8–11 of a single byte, so it would read zero always; under
+`(raw & 0xF0) >> 4` it is the high nibble, which is what a four-state status
+field wants. `ALS Status` (shift 5, mask `E0`), `OtherLimit` (shift 3, mask
+`78`) and every single-bit row in `S-MAXX720.TRI` — `ErrorCount` shift 6 mask
+`0040`, `LossSync` shift 7 mask `0080` — line up the same way and only the same
+way.
+
+So a single bit *n* is written **`shift = n`, `mask = 1 << n`**, not
+`mask = 1`. The flag rows in `S-AQY.TRI` are built that way.
 
 ---
 

@@ -20,6 +20,11 @@ HEADER = "info;1.0;0;0;0;0;0;0;0;0;0;0;-notes-;"
 GOOD = "0000;0280;1;2;2;1;0;0000;0;RPM;0.25000000;0.00000000;0;0.00000000;0.00000000;0.00000000;1.00000000;0;-1.00;6500.00;255;0.00;0;0;0;0;"
 
 
+def _names() -> list[str]:
+    lines = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig").splitlines()
+    return [l[:-1].split(";")[9] for l in lines[1:] if l.strip()]
+
+
 class TestRealFiles(unittest.TestCase):
     def test_production_file_is_clean(self):
         self.assertEqual(check(TRI / "S-AQY.TRI"), [])
@@ -28,11 +33,18 @@ class TestRealFiles(unittest.TestCase):
         for path in (TRI / "reference").glob("*.TRI"):
             self.assertEqual(check(path), [], path.name)
 
-    def test_production_file_has_16_sensors_in_order(self):
-        lines = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig").splitlines()
-        names = [l[:-1].split(";")[9] for l in lines[1:] if l.strip()]
-        self.assertEqual(names, AQY_ORDER)
-        self.assertEqual(len(names), 16)
+    def test_production_file_sensors_are_in_order(self):
+        self.assertEqual(_names(), AQY_ORDER)
+
+    def test_the_first_sixteen_positions_never_move(self):
+        """A TRI file is addressed by position and the display is already
+        configured against these sixteen. New sensors are APPENDED; inserting
+        one silently repoints every gauge after it."""
+        self.assertEqual(_names()[:16], [
+            "RPM", "Speed", "CLT", "FuelNow", "FuelAvg", "FuelTank", "Range",
+            "Torque", "Power", "OilTemp", "TankL", "AccelG", "FuelCntRaw",
+            "VddConv", "DisplayVolt", "DisplayTemp",
+        ])
 
     def test_internal_gen2_lines_are_verbatim(self):
         text = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig")
@@ -47,7 +59,7 @@ class TestRealFiles(unittest.TestCase):
                 continue
             cols = line[:-1].split(";")
             can_id, fmt, name = cols[1].upper(), cols[2], cols[9]
-            if can_id in ("0600", "0601", "0602"):
+            if can_id in ("0600", "0601", "0602", "0603"):
                 self.assertEqual(fmt, "0", f"{name} should be big endian")
             elif can_id in ("0280", "01A0", "0480"):
                 self.assertEqual(fmt, "1", f"{name} should be little endian")

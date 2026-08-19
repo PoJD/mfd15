@@ -24,40 +24,45 @@ channels then read zero).
 ## What this repository holds
 
 **`tri/S-AQY.TRI` is final and verified on a real display**, uploaded through
-oDSS and checked in the vehicle, including on the rebuilt harness with the CAN
-pair on jumpers standing in for the converter board.
+oDSS and checked in the vehicle with the converter fitted and transmitting.
 
 - All nine channels that read the car's bus directly show correct values.
-- The seven channels fed by the converter read 0, exactly as expected while
-  no converter exists. That is the correct result, not a fault.
+- The ten channels fed from 0x600, 0x601 and 0x602 show correct values against
+  the converter.
+- The twelve channels fed from 0x603 read 0 unless the converter's `DBG_EN`
+  jumper (JP1) is fitted, because that frame is not transmitted without it.
+  Zero there is a missing jumper, not a fault.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
   row did not need deleting on this oDSS version.
 - DisplayVolt reads ~12.5 V with the ignition on and ~14 V with the engine
   running, on the stock Gen2 scaling. That settles it — no calibration needed.
 
-Offline validation also passes: 16 sensors in the right order, both Gen2
+Offline validation also passes: 31 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
 reference files, all tests green.
 
 ### There is no outstanding work in this repo
 
-The TRI file is done. Do not change it speculatively.
+The TRI file is done. Do not change it speculatively — but it is no longer
+frozen against the converter: every value `canfuel` transmits now has a row
+here, and a new field in `canfuel/docs/frames.md` needs one adding in the same
+breath.
 
 **The project's plan lives in `canfuel/docs/install.md`** and step 2 — the one
 this repository owns — is done. Nothing here tracks "what next"; that document
 does, for all three repositories.
 
-The one thing that will require a change is the converter going live: when
-`canfuel` starts transmitting 0x600–0x602, the layout in
-`canfuel/docs/frames.md` and this file have to move together. That is the only
-coupling between the two repos, and it runs in both directions — a change here
-without a matching change there breaks the display silently, with plausible but
-wrong numbers rather than an error.
+The one standing obligation is the coupling to the converter: the layout in
+`canfuel/docs/frames.md` and the rows here have to move together. It runs in
+both directions — a change on either side without a matching change on the
+other breaks the display silently, with plausible but wrong numbers rather than
+an error. All four frames, 0x600 to 0x603, now have rows here, so the coupling
+covers every field the converter transmits.
 
-At that point the useful check is comparing FuelNow against FuelCntRaw on the
-display: FuelCntRaw is the raw ECU counter with no conversion, so if it rises
-while FuelNow shows nonsense, the fault is in the converter's arithmetic rather
-than in its input.
+The useful check on the display is comparing FuelNow against FuelCntRaw:
+FuelCntRaw is the raw ECU counter with no conversion, so if it rises while
+FuelNow shows nonsense, the fault is in the converter's arithmetic rather than
+in its input.
 
 ---
 
@@ -118,17 +123,35 @@ and use a shorter number format than the other rows:
 
 ---
 
-## S-AQY.TRI — 16 sensors, do not reorder the rows
+## S-AQY.TRI — 31 sensors, do not reorder the rows
 
 ```
 RPM, Speed, CLT, FuelNow, FuelAvg, FuelTank, Range, Torque, Power,
-OilTemp, TankL, AccelG, FuelCntRaw, VddConv, DisplayVolt, DisplayTemp
+OilTemp, TankL, AccelG, FuelCntRaw, VddConv, DisplayVolt, DisplayTemp,
+Flow, TripFuel, TripDist,
+CanRxErr, CanTxErr, ComStat,
+CanOK, Silent, Unhealthy, DataLive, PersistOK, UnhealthyNow,
+ResetCause, TxRefused, Uptime
 ```
 
-Six channels (FuelNow, FuelAvg, FuelTank, Range, Torque, Power) plus VddConv
-read zero until the converter exists. That is correct, not a fault.
+**APPEND, NEVER INSERT.** A TRI file is addressed by position and the display
+is already configured against the first sixteen. Everything after
+`DisplayTemp` was appended for exactly that reason, and the two Gen2 internal
+rows being in the middle of the file rather than at the end is a consequence of
+it, not an error — `S-LINKG4X.TRI` has its internal rows in the middle too.
+`test_the_first_sixteen_positions_never_move` holds this.
 
-**Big endian for our own frames.** Channels from the converter (0x600, 0x601)
+**The last twelve rows read frame 0x603, which the converter transmits only
+while its `DBG_EN` jumper is fitted.** They read zero without it, and that is
+the design rather than a fault. The point of having them is that "is the CAN
+side healthy" can be answered on the display instead of with a laptop and a
+USBtin.
+
+**Single bits are `shift = n`, `mask = 1 << n`** — the mask is applied first
+and the shift second. That is not the obvious reading and it is settled by the
+official reference files; the evidence is in `docs/tri-format.md`.
+
+**Big endian for our own frames.** Channels from the converter (0x600–0x603)
 use Format 0; channels from the car (0x280, 0x1A0, 0x480) use Format 1. The car
 sends little endian, we send big endian — deliberately, so the two cannot be
 confused.
@@ -189,7 +212,7 @@ Two siblings sit next to this one, with separate toolchains and separate GitHub
 remotes under `PoJD/`. The directory above them is deliberately not a git repo,
 so always run git inside one of the three.
 
-- `canfuel` — the firmware that fills frames 0x600–0x602
+- `canfuel` — the firmware that fills frames 0x600–0x603
 - `kicad` — the converter board
 
 **`canfuel/docs/refuted.md` collects the refuted hypotheses of all three

@@ -11,7 +11,7 @@ What is checked:
   - sensor names no longer than 15 characters
   - a valid CAN ID (hex, or FFF for internal sensors)
   - Format, Length and sensor type within their allowed values
-  - for S-AQY.TRI additionally the exact order of the 16 sensors and the
+  - for S-AQY.TRI additionally the exact order of the sensors and the
     verbatim text of the two Gen2 internal rows
 
 Usage:
@@ -45,10 +45,16 @@ PLACEHOLDER_NAMES = {"empty", "-", ""}
 
 # Sensor order in the production file. A TRI file is addressed by position, so
 # reordering rows changes which sensor sits where in the display configuration.
+# Rows 17 onwards were appended rather than inserted, deliberately: the first
+# sixteen keep the positions the display was already configured against.
 AQY_ORDER = [
     "RPM", "Speed", "CLT", "FuelNow", "FuelAvg", "FuelTank", "Range",
     "Torque", "Power", "OilTemp", "TankL", "AccelG", "FuelCntRaw",
     "VddConv", "DisplayVolt", "DisplayTemp",
+    "Flow", "TripFuel", "TripDist",
+    "CanRxErr", "CanTxErr", "ComStat",
+    "CanOK", "Silent", "Unhealthy", "DataLive", "PersistOK", "UnhealthyNow",
+    "ResetCause", "TxRefused", "Uptime",
 ]
 
 # Verified against the official Gen2 files. They write numbers in a shorter
