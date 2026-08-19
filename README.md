@@ -104,9 +104,10 @@ rejoin until the display is asked for one.
 
 **6. Check it against the car.** The CAN icon must be **green** — that is the
 display saying it is seeing the bus — and the sensor list must match the
-sixteen under *What the file does* above, showing live values for the nine that
-read the car directly. The seven fed by the converter read 0 until `canfuel` transmits, and
-that is correct rather than a fault.
+thirty-one under *What the file does* above, showing live values for the nine
+that read the car directly. The ten fed by the converter read 0 until `canfuel`
+transmits, and the twelve fed by 0x603 read 0 unless the converter's `DBG_EN`
+jumper is fitted. Both are correct rather than a fault.
 
 **Confirming the upload alone, with no car:** `DisplayVolt` must show a
 realistic ~12–14 V. It is an internal sensor of the display, so it is live
@@ -119,6 +120,27 @@ If the file does not load, or a sensor named "0" appears, delete the first
 Anything beyond this — the buttons, the pages, the rest of oDSS — is in
 [`docs/manual-mfd15-gen2.pdf`](docs/manual-mfd15-gen2.pdf), §4 for the
 connection and §6 for oDSS itself.
+
+## Uploading puts errors on the CAN bus, briefly
+
+**Observed in the vehicle with the converter fitted:** uploading a TRI file, and
+changing the display's configuration, each produced a burst of CAN errors. The
+converter's `LED_CAN` blinked for a few seconds and its latched `UNHEALTHY`
+flag came on and stayed on until the next power-up, while its error counters
+walked back to zero on their own straight afterwards. Nothing was lost.
+
+**Nothing needs doing about it**, and there are two reasons to know it anyway:
+
+- **Do not diagnose the converter for it.** That flag set with the error
+  counters at zero, after somebody has been in oDSS, is very probably this.
+  Power-cycle before reading it as a verdict on anything.
+- **It cannot happen while driving.** oDSS needs the display's Wi-Fi hotspot
+  and the hotspot is off by default, so this belongs to setup and nowhere else.
+
+What the display actually does is **not established** — see `CLAUDE.md` before
+repeating this anywhere it might be taken as a mechanism.
+
+---
 
 ## After changing pages, upload the file again
 
