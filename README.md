@@ -16,10 +16,10 @@ The twelve channels fed from frame 0x603 read 0 unless the converter's `DBG_EN`
 jumper (JP1) is fitted — that frame is not transmitted at all without it. Zero
 there is a missing jumper, not a fault.
 
-⚠ **The last ten rows, frame 0x604, are appended and not yet verified on the
-display.** They were added with the converter firmware that transmits them and
-have passed `tools/validate_tri.py`, but the file has not been uploaded since.
-Everything above this note stays as verified.
+The last ten rows, frame 0x604, have been uploaded with the rest and read in
+the car against the converter: `IdleHealth` left 255 after half a minute of
+idle and settled on a plausible value, `StartCrank` shows the start, and the
+other rows read as expected. The first thirty-one rows kept their positions.
 
 **The whole build path, across all three repositories, is
 [`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md).**

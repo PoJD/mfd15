@@ -32,8 +32,9 @@ oDSS and checked in the vehicle with the converter fitted and transmitting.
 - The twelve channels fed from 0x603 read 0 unless the converter's `DBG_EN`
   jumper (JP1) is fitted, because that frame is not transmitted without it.
   Zero there is a missing jumper, not a fault.
-- ⚠ **The ten channels fed from 0x604 are appended and NOT yet verified on the
-  display.** They passed the validator; the file has not been uploaded since.
+- The ten channels fed from 0x604 were uploaded and read in the car:
+  `IdleHealth` leaves 255 after 30 s of idle and settles, `StartCrank` shows
+  the start, and the rest read as expected.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
   row did not need deleting on this firmware.
 
