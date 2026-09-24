@@ -146,15 +146,15 @@ The seventh, #15, is a new addition described below.
   3000 rpm in neutral. Both are already in the logs.
 - **Source scaling:** bytes 1, 4 and 7 of 0x280 carry three torque variants
   (driver request / indicated / internal) at ~0.39 % per bit — a percentage of
-  a reference torque held in the ECU's calibration, not Nm. **0.75 Nm per bit**
-  in the converter, and that is a decision, not a measurement. It was 0.67,
-  from "the AQY maximum is 172 Nm → 172/256", which is wrong on its own terms:
-  the signal is *indicated* torque (at 2940 rpm in neutral the crank makes
-  nothing and the byte still reads 37), so its full scale is the maximum
-  indicated torque — the rated crank figure plus drag — and scaling it to the
-  crank maximum before subtracting drag counted the friction twice. At 0.67 the
-  display could never reach the factory 85 kW. The reasoning and the
-  0.745–0.773 bracket live in `canfuel/docs/frames.md`.
+  a reference torque held in the ECU's calibration, not Nm. **1.06 Nm per bit**
+  in the converter, measured: held full-throttle pulls put b7 on a plateau of
+  185 at 2400 rpm and 191 at 5200, and with the drag subtracted in bytes the
+  two factory ratings (170 Nm, 85 kW) agree on the scale to 0.6 %. Earlier
+  versions derived it from "b7 = 255 is the rating plus drag" (0.67, 0.75,
+  0.74), a premise the pulls refuted — the engine never gets near 255 — so
+  they displayed about 30 % low. The signal is *indicated* torque either way:
+  at 2940 rpm in neutral the crank makes nothing and the byte still reads 37.
+  The numbers live in `canfuel/docs/frames.md`.
 - **Realism:** the ME7 does not measure torque, it models it from air mass per
   stroke with corrections for ignition advance and lambda. The 100 % figure is
   a calibration constant in the ECU that an ordinary chip tune does not change.
@@ -276,6 +276,35 @@ The seventh, #15, is a new addition described below.
   `counter == 0 || rpm == 0` → reinitialise `prev`.
 
 ---
+
+## 0x604 — engine health: IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip, StartClt, and three flags
+
+- **Source:** 0x604, one byte per field, big endian like every converter
+  frame. **Transmitted always**, not only with JP1 — unlike 0x603.
+- **What it is:** a trend instrument for the engine, from engine speed and a
+  clock alone. It grades how steadily the engine idles and records how it
+  started, so that plugs or an injector going off can be seen over months. It
+  is not a fault detector and never says what is wrong.
+- **255 means "not known" in every field**, never zero; the whole frame reads
+  255 while the bus is quiet. A zero grade would be a perfectly smooth engine.
+
+| Row | Byte | Formula | Meaning |
+|---|---|---|---|
+| IdleHealth | 0 | `raw` | 0–200, 100 = the engine before the repair; 255 until 30 s of settled idle have been graded this start |
+| IdleRough | 1 | `raw × 0.03125` = rpm | the raw grade the index is made from; 7.97 on the display is "not known" |
+| IdleSec | 2 | `raw` = s | settled idle graded this start |
+| StartHealth | 3 | `raw` | reserved, always 255 |
+| StartCrank | 4 | `raw × 0.032` = s | crank to first firing (400 rpm); 8.16 on the display is "not known" |
+| StartDip | 5 | `raw` = rpm | speed lost straight after first firing |
+| StartClt | 6 | `raw − 50` = °C | coolant at first firing; 205 on the display is "not known" |
+| IdleNow | 7 bit 0 | `(raw & 1) >> 0` | settled idle right now |
+| StartSeen | 7 bit 1 | `(raw & 2) >> 1` | this start was watched from a standstill |
+| HealthLive | 7 bit 2 | `(raw & 4) >> 2` | the converter is receiving the bus |
+
+- **Read IdleHealth at the same oil temperature each time** — the grade is not
+  monotonic through a warm-up, so a comparison across temperatures says
+  nothing. `canfuel/docs/frames.md` has the arithmetic, the anchor and why the
+  index has not yet been validated against a healthy engine.
 
 ## Voltage — what was found and what to do about it
 

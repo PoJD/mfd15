@@ -16,16 +16,22 @@ The twelve channels fed from frame 0x603 read 0 unless the converter's `DBG_EN`
 jumper (JP1) is fitted — that frame is not transmitted at all without it. Zero
 there is a missing jumper, not a fault.
 
+⚠ **The last ten rows, frame 0x604, are appended and not yet verified on the
+display.** They were added with the converter firmware that transmits them and
+have passed `tools/validate_tri.py`, but the file has not been uploaded since.
+Everything above this note stays as verified.
+
 **The whole build path, across all three repositories, is
 [`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md).**
 The step this repository owns is step 2, and it is done.
 
 ## What the file does
 
-31 sensors. Nine of them read the car's powertrain CAN directly and work on
+42 sensors. Ten of them read the car's powertrain CAN directly and work on
 their own, with no converter present at all:
 
-RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp
+RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp,
+TorqRaw
 
 Ten are filled by the `canfuel` converter from frames 0x600, 0x601 and 0x602,
 which it transmits whenever it is powered:
@@ -38,6 +44,14 @@ The remaining twelve decode the converter's diagnostic frame 0x603, which is
 
 CanRxErr, CanTxErr, ComStat, CanOK, Silent, Unhealthy, DataLive, PersistOK,
 UnhealthyNow, ResetCause, TxRefused, Uptime
+
+The last ten decode the converter's engine-health frame 0x604, which is
+transmitted **whenever the converter is powered** — it is for a closed
+dashboard. Its "not known" is **255 in every field**, never zero, and the whole
+frame reads 255 while the bus is quiet:
+
+IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip,
+StartClt, IdleNow, StartSeen, HealthLive
 
 `canfuel/docs/frames.md` is the authority on every layout above, and the flag
 and reset-cause bits are tabulated there.
@@ -166,7 +180,7 @@ python -m unittest discover -s tools -p "test_*.py"
 
 ```
 tri/
-  S-AQY.TRI              production file, 31 sensors
+  S-AQY.TRI              production file, 42 sensors
   reference/             official Gen2 files used as examples
 docs/
   sensors.md             description of every sensor and where it comes from

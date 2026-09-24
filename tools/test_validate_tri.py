@@ -52,7 +52,7 @@ class TestRealFiles(unittest.TestCase):
             self.assertIn(line, text, sensor)
 
     def test_converter_channels_are_big_endian(self):
-        """Our own frames 0x600/0x601 use Format 0, the car's frames Format 1.
+        """Our own frames 0x600-0x604 use Format 0, the car's frames Format 1.
 
         MULTI-BYTE FIELDS ONLY. For a one-byte field there is no byte order to
         get wrong and the column says nothing, which is why every single-byte
@@ -68,7 +68,7 @@ class TestRealFiles(unittest.TestCase):
             can_id, fmt, length, name = cols[1].upper(), cols[2], cols[4], cols[9]
             if length == "1":
                 continue
-            if can_id in ("0600", "0601", "0602", "0603"):
+            if can_id in ("0600", "0601", "0602", "0603", "0604"):
                 self.assertEqual(fmt, "0", f"{name} should be big endian")
             elif can_id in ("0280", "01A0", "0480"):
                 self.assertEqual(fmt, "1", f"{name} should be little endian")

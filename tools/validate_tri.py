@@ -56,6 +56,9 @@ AQY_ORDER = [
     "CanOK", "Silent", "Unhealthy", "DataLive", "PersistOK", "UnhealthyNow",
     "ResetCause", "TxRefused", "Uptime",
     "TorqRaw",
+    "IdleHealth", "IdleRough", "IdleSec", "StartHealth",
+    "StartCrank", "StartDip", "StartClt",
+    "IdleNow", "StartSeen", "HealthLive",
 ]
 
 # Verified against the official Gen2 files. They write numbers in a shorter
