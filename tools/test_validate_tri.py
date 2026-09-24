@@ -56,8 +56,8 @@ class TestRealFiles(unittest.TestCase):
 
         MULTI-BYTE FIELDS ONLY. For a one-byte field there is no byte order to
         get wrong and the column says nothing, which is why every single-byte
-        car channel in this file carries Format 0 -- CLT, OilTemp, TankL,
-        AccelG and TorqRaw. Asserting a value there would be asserting a
+        car channel in this file carries Format 0 -- CLT, OilTemp, TankL and
+        AccelG. Asserting a value there would be asserting a
         convention the file does not follow.
         """
         lines = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig").splitlines()

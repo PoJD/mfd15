@@ -27,11 +27,10 @@ The step this repository owns is step 2, and it is done.
 
 ## What the file does
 
-42 sensors. Ten of them read the car's powertrain CAN directly and work on
+41 sensors. Nine of them read the car's powertrain CAN directly and work on
 their own, with no converter present at all:
 
-RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp,
-TorqRaw
+RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp
 
 Ten are filled by the `canfuel` converter from frames 0x600, 0x601 and 0x602,
 which it transmits whenever it is powered:
@@ -180,7 +179,7 @@ python -m unittest discover -s tools -p "test_*.py"
 
 ```
 tri/
-  S-AQY.TRI              production file, 42 sensors
+  S-AQY.TRI              production file, 41 sensors
   reference/             official Gen2 files used as examples
 docs/
   sensors.md             description of every sensor and where it comes from

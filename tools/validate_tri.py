@@ -55,7 +55,6 @@ AQY_ORDER = [
     "CanRxErr", "CanTxErr", "ComStat",
     "CanOK", "Silent", "Unhealthy", "DataLive", "PersistOK", "UnhealthyNow",
     "ResetCause", "TxRefused", "Uptime",
-    "TorqRaw",
     "IdleHealth", "IdleRough", "IdleSec", "StartHealth",
     "StartCrank", "StartDip", "StartClt",
     "IdleNow", "StartSeen", "HealthLive",

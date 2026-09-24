@@ -45,7 +45,7 @@ before being asked for one. **This file is verified against display firmware
 - DisplayVolt reads ~12.5 V with the ignition on and ~14 V with the engine
   running, on the stock Gen2 scaling. That settles it — no calibration needed.
 
-Offline validation also passes: 42 sensors in the right order, both Gen2
+Offline validation also passes: 41 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
 reference files, all tests green.
 
@@ -131,7 +131,7 @@ and use a shorter number format than the other rows:
 
 ---
 
-## S-AQY.TRI — 42 sensors, do not reorder the rows
+## S-AQY.TRI — 41 sensors, do not reorder the rows
 
 ```
 RPM, Speed, CLT, FuelNow, FuelAvg, FuelTank, Range, Torque, Power,
@@ -139,7 +139,7 @@ OilTemp, TankL, AccelG, FuelCntRaw, VddConv, DisplayVolt, DisplayTemp,
 Flow, TripFuel, TripDist,
 CanRxErr, CanTxErr, ComStat,
 CanOK, Silent, Unhealthy, DataLive, PersistOK, UnhealthyNow,
-ResetCause, TxRefused, Uptime, TorqRaw,
+ResetCause, TxRefused, Uptime,
 IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip,
 StartClt, IdleNow, StartSeen, HealthLive
 ```
@@ -151,13 +151,13 @@ rows being in the middle of the file rather than at the end is a consequence of
 it, not an error — `S-LINKG4X.TRI` has its internal rows in the middle too.
 `test_the_first_sixteen_positions_never_move` holds this.
 
-**The ten rows after `TorqRaw` read frame 0x604, the engine-health frame**,
+**The ten rows after `Uptime` read frame 0x604, the engine-health frame**,
 which is NOT behind the jumper: it is for a closed dashboard. 255 is "not
 known" in every one of its fields and never zero; `canfuel/docs/frames.md` has
 the layout. `StartHealth` reads 255 always for now — it is reserved until a
 dozen good starts have been recorded to fit it.
 
-**The twelve rows before `TorqRaw` read frame 0x603, which the converter transmits
+**The twelve rows before them read frame 0x603, which the converter transmits
 only while its `DBG_EN` jumper is fitted.** They read zero without it, and that is
 the design rather than a fault. The point of having them is that "is the CAN
 side healthy" can be answered on the display instead of with a laptop and a
