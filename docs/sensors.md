@@ -57,7 +57,7 @@ The seventh, #15, is a new addition described below.
   > **Correction from phase 0.** Byte 1 is a bit field, not a single value.
   > 0x48 and 0x50 are equally valid states and 0x48 is in fact the majority in
   > `07_accel.txt`. The correct rule is `(b1 & 0x40) && !(b1 & 0x03)`. See
-  > `canfuel/docs/can-decoding.md`.
+  > `canfuel/docs/firmware/can-decoding.md`.
 
 - **Factor 0.005, not 0.01:** determined from the fact that the whole test
   drive was in first gear — max raw 3879 → 19.4 km/h at ~2560 rpm, which fits
@@ -93,7 +93,7 @@ The seventh, #15, is a new addition described below.
 
   > **Correction from phase 0.** The threshold ended up at 4.0 km/h and below
   > it the channel switches to l/h rather than clamping. See
-  > `canfuel/docs/frames.md`.
+  > `canfuel/docs/firmware/frames.md`.
 
 - **Smoothing:** a ~1 s rolling average, otherwise the number dances unreadably.
 
@@ -111,7 +111,7 @@ The seventh, #15, is a new addition described below.
   kilometres are broadcast on the bus. Otherwise a Can Switch from the MFD15.
 
   > **Superseded in phase 0.** The reset is now tied to refuelling, which needs
-  > neither a sniff nor a licence. See `canfuel/docs/refuel-reset.md`.
+  > neither a sniff nor a licence. See `canfuel/docs/firmware/refuel-reset.md`.
 
 ## 6. FuelTank — fuel in tank (damped)
 
@@ -154,7 +154,7 @@ The seventh, #15, is a new addition described below.
   0.74), a premise the pulls refuted — the engine never gets near 255 — so
   they displayed about 30 % low. The signal is *indicated* torque either way:
   at 2940 rpm in neutral the crank makes nothing and the byte still reads 37.
-  The numbers live in `canfuel/docs/frames.md`.
+  The numbers live in `canfuel/docs/firmware/frames.md`.
 - **Realism:** the ME7 does not measure torque, it models it from air mass per
   stroke with corrections for ignition advance and lambda. The 100 % figure is
   a calibration constant in the ECU that an ordinary chip tune does not change.
@@ -192,7 +192,7 @@ The seventh, #15, is a new addition described below.
   moving through the engine, where an intake temperature would fall, and it
   reads 255 with the ignition on and the engine off, which a thermistor the ECU
   can read whenever it is awake would not. The table is in question 2 below and
-  in `canfuel/docs/can-decoding.md` question 4; `canfuel/docs/refuted.md` B3 is
+  in `canfuel/docs/firmware/can-decoding.md` question 4; `canfuel/docs/firmware/refuted.md` B3 is
   the entry. `07_accel` on its own does not settle it — 16 s of acceleration is
   too short to separate the two.
 - **Bytes 1 and 2 of 0x420** are, according to the source, ambient temperature
@@ -236,7 +236,7 @@ The seventh, #15, is a new addition described below.
   long time. It works in principle and is a poor test — the deflection is
   sin(tilt), so a 6 % driveway gives 0.06 G against a 0.01 G resolution. The
   full derivation and the two flat-ground tests that replaced it are in
-  `canfuel/docs/can-decoding.md` question 5.
+  `canfuel/docs/firmware/can-decoding.md` question 5.
 - **Historical note:** this byte was previously mislabelled as tank level.
   That was wrong and has been corrected.
 
@@ -255,7 +255,7 @@ The seventh, #15, is a new addition described below.
   > constant: it is zero from ignition on until the first wrap, then
   > permanently one. And the counter wraps at 32768, so the modulus is 32768,
   > not 32767. Neither affects the arithmetic, since the mask drops bit 15.
-  > See `canfuel/docs/can-decoding.md`.
+  > See `canfuel/docs/firmware/can-decoding.md`.
 
 - **Measured flow rates:**
   - warm idle at 797 rpm → 310 µl/s = **1.12 l/h**
@@ -303,7 +303,7 @@ The seventh, #15, is a new addition described below.
 
 - **Read IdleHealth at the same oil temperature each time** — the grade is not
   monotonic through a warm-up, so a comparison across temperatures says
-  nothing. `canfuel/docs/frames.md` has the arithmetic, the anchor and why the
+  nothing. `canfuel/docs/firmware/frames.md` has the arithmetic, the anchor and why the
   index has not yet been validated against a healthy engine.
 
 ## Voltage — what was found and what to do about it
@@ -421,7 +421,7 @@ about the signals themselves and belong to the `canfuel` work.
    An intake sensor does none of those.
 3. ~~**AccelG: longitudinal or lateral?**~~ — **closed: lateral.**
    Measured by circling at full lock; see #12 above and
-   `canfuel/docs/can-decoding.md` question 5.
+   `canfuel/docs/firmware/can-decoding.md` question 5.
 4. **0x288 b5 and b6** — load-dependent, undecoded. Candidates are MAF,
    ignition advance and injection time. Fastest route is comparing against
    VCDS measuring blocks.
@@ -431,7 +431,7 @@ about the signals themselves and belong to the `canfuel` work.
    about drag under load; that part is still open and belongs to canfuel
    phase 6.
 
-**`canfuel/docs/can-decoding.md` is the authority for this list** — it carries
+**`canfuel/docs/firmware/can-decoding.md` is the authority for this list** — it carries
 the full version with the procedure that would close each one. What is still
 open there: the 0x480 frame period, 0x288 b5/b6, the torque byte's scale, and
 the fixture timestamps.

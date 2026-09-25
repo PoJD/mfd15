@@ -54,15 +54,15 @@ reference files, all tests green.
 
 The TRI file is done. Do not change it speculatively — but it is no longer
 frozen against the converter: every value `canfuel` transmits now has a row
-here, and a new field in `canfuel/docs/frames.md` needs one adding in the same
+here, and a new field in `canfuel/docs/firmware/frames.md` needs one adding in the same
 breath.
 
-**The project's plan lives in `canfuel/docs/install.md`** and step 2 — the one
+**The project's plan lives in `canfuel/docs/firmware/install.md`** and step 2 — the one
 this repository owns — is done. Nothing here tracks "what next"; that document
 does, for all three repositories.
 
 The one standing obligation is the coupling to the converter: the layout in
-`canfuel/docs/frames.md` and the rows here have to move together. It runs in
+`canfuel/docs/firmware/frames.md` and the rows here have to move together. It runs in
 both directions — a change on either side without a matching change on the
 other breaks the display silently, with plausible but wrong numbers rather than
 an error. All four frames, 0x600 to 0x603, now have rows here, so the coupling
@@ -154,7 +154,7 @@ it, not an error — `S-LINKG4X.TRI` has its internal rows in the middle too.
 
 **The ten rows after `Uptime` read frame 0x604, the engine-health frame**,
 which is NOT behind the jumper: it is for a closed dashboard. 255 is "not
-known" in every one of its fields and never zero; `canfuel/docs/frames.md` has
+known" in every one of its fields and never zero; `canfuel/docs/firmware/frames.md` has
 the layout. `StartHealth` reads 255 always for now — it is reserved until a
 dozen good starts have been recorded to fit it.
 
@@ -212,7 +212,7 @@ Three things follow, in order of how much they are worth:
   mechanism.** A capture with `canfuel/tools/usbtin_capture.py` across an
   upload would say what actually goes onto the wire, and nobody has run one.
 
-`canfuel/docs/frames.md` carries the same note where somebody debugging the
+`canfuel/docs/firmware/frames.md` carries the same note where somebody debugging the
 converter will meet it.
 
 ---
@@ -276,7 +276,7 @@ problem is in the input or in the computation.
 ## Two inaccuracies in `docs/sensors.md`
 
 The file is otherwise valid and detailed, but two claims in it do not match
-what the data showed (verified in the `canfuel` repo, `docs/can-decoding.md`).
+what the data showed (verified in the `canfuel` repo, `docs/firmware/can-decoding.md`).
 Both are flagged inline in `sensors.md` as corrections:
 
 1. **"bit 15 of the counter is constantly 1"** — it is not. It is zero from
@@ -297,7 +297,7 @@ so always run git inside one of the three.
 - `canfuel` — the firmware that fills frames 0x600–0x603
 - `kicad` — the converter board
 
-**`canfuel/docs/refuted.md` collects the refuted hypotheses of all three
+**`canfuel/docs/firmware/refuted.md` collects the refuted hypotheses of all three
 repositories.** The two inaccuracies above are entries B7 and B8 there, and the
 byte once mislabelled as tank level is B2. It is one file rather than three so
 that a plausible idea somebody is about to have again can be found from any of

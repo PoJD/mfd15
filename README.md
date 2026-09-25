@@ -22,7 +22,7 @@ idle and settled on a plausible value, `StartCrank` shows the start, and the
 other rows read as expected. The first thirty-one rows kept their positions.
 
 **The whole build path, across all three repositories, is
-[`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md).**
+[`canfuel/docs/firmware/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/firmware/install.md).**
 The step this repository owns is step 2, and it is done.
 
 ## What the file does
@@ -52,7 +52,7 @@ frame reads 255 while the bus is quiet:
 IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip,
 StartClt, IdleNow, StartSeen, HealthLive
 
-`canfuel/docs/frames.md` is the authority on every layout above, and the flag
+`canfuel/docs/firmware/frames.md` is the authority on every layout above, and the flag
 and reset-cause bits are tabulated there.
 
 **Rows are appended, never inserted.** A TRI file is addressed by position and
@@ -202,18 +202,18 @@ speed, coolant, oil, tank level, acceleration and the raw fuel counter. The
 other seven need the converter, which is the other two repositories. Clone them
 side by side if you want the whole thing.
 
-**Building the whole thing?** [`canfuel/docs/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/install.md)
+**Building the whole thing?** [`canfuel/docs/firmware/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/firmware/install.md)
 is the path from three clones to a working device, in the order it has to
 happen. Uploading the TRI file — the part that lives here — is step 2 of seven.
 
 | Repository | What it holds | Go there for |
 |---|---|---|
 | **`mfd15`** (this one) | the display configuration | `tri/S-AQY.TRI`, `docs/sensors.md` — what every gauge reads and where it comes from |
-| [`canfuel`](https://github.com/PoJD/canfuel) | the converter firmware | how the seven converter channels are computed; `docs/frames.md` is the layout this repository consumes |
+| [`canfuel`](https://github.com/PoJD/canfuel) | the converter firmware | how the seven converter channels are computed; `docs/firmware/frames.md` is the layout this repository consumes |
 | [`kicad`](https://github.com/PoJD/kicad) | the converter board | `canfuel/docs/harness.md` — **how to make the loom and wire it into the car**, including the plug C pins this display supplies the converter from |
 
 **The coupling that can bite** is the layout of frames 0x600 and 0x601:
-`canfuel/docs/frames.md` defines it and `tri/S-AQY.TRI` consumes it. If one
+`canfuel/docs/firmware/frames.md` defines it and `tri/S-AQY.TRI` consumes it. If one
 changes without the other, nothing errors — the display just shows plausible
 wrong numbers, which is worse. `canfuel/test/test_txframes.c` pins every offset
 against this file and quotes the relevant TRI lines in its header.
