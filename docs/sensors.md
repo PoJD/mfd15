@@ -72,8 +72,8 @@ The seventh, #15, is a new addition described below.
 - **Source:** 0x288 (Motor 3) byte 1
 - **Formula:** `raw × 0.75 − 48` = °C
 - **Fault value:** 0xFF
-  Same formula, so it would reach the display as 143 °C the way OilTemp's does
-  — see #10. No log has ever shown 0x288 b1 sending it, warm or cold, engine
+  It would reach the display as 143 °C — the same latched maximum OilTemp's
+  fault value gives, see #10. No log has ever shown 0x288 b1 sending it, warm or cold, engine
   running or not.
 - **Verified:** a monotonic warm-up curve across all five logs,
   68 → 90 → 94.5 → 99 → 100.5 °C. Also confirmed by an external source
@@ -171,14 +171,24 @@ The seventh, #15, is a new addition described below.
 
 ## 10. OilTemp — oil temperature
 
-- **Source:** 0x420 (Kombi 1) byte 3
-- **Formula:** `raw × 0.75 − 48` = °C
+- **Source:** 0x420 (`Kombi_2`, the instrument cluster's) byte 3
+- **Formula:** `raw − 60` = °C (**changed 15/10/2026**; it was `raw × 0.75 −
+  48`, borrowed from the coolant by analogy). The new one is the published
+  layout of `Kombi_2` in commaai's opendbc `vw_pq.dbc`, `Oeltemperatur_4_1 :
+  24|8@1+ (1,-60)`, whose other fields match this car; the argument, and why
+  the DBC's offset is kept rather than one fitted to the cold soaks, is
+  `canfuel/docs/firmware/open.md` question 10. A display that read 72 °C warm
+  now reads about 100 °C: **every oil temperature written before 15/10/2026,
+  here and in `canfuel`, is on the old scale** — new = (old + 48) / 0.75 − 60.
+- **Display limit raised from 90 to 150 °C** with it (*decision*): warm oil
+  on the new scale sits near 100 °C, so 90 would clip every drive; 150 leaves
+  room for a hard one. Pop and blink stay off.
 - **Fault value:** 0xFF (in log 01, ignition on without the engine running, it
-  is exactly 0xFF; in log 05 at 3000 rpm it reads 116 → 39 °C)
-- **The fault value reaches the display as a maximum of 143 °C.**
-  `0xFF × 0.75 − 48 = 143.25`, shown as 143 because the row carries no decimal
-  places, and the display latches it into its recorded maximum for OilTemp. It
-  is not a temperature. **Nothing can filter it out here:** the display reads
+  is exactly 0xFF; in log 05 at 3000 rpm it reads 116 → 56 °C, 39 °C on the
+  old scale)
+- **The fault value reaches the display as a maximum of 195 °C.**
+  `0xFF − 60 = 195` (143 °C on the old scale), and the display latches it into
+  its recorded maximum for OilTemp. It is not a temperature. **Nothing can filter it out here:** the display reads
   0x420 b3 straight off the bus rather than through the converter, and the TRI
   format has no validity gate — columns 19/20 are warning limits, not a range
   the display will reject a value outside of (`tri-format.md`). So reset the
