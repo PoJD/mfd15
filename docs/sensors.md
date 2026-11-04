@@ -311,6 +311,14 @@ The seventh, #15, is a new addition described below.
   monotonic through a warm-up, so a comparison across temperatures says
   nothing. `canfuel/docs/firmware/frames.md` has the arithmetic, the anchor and why the
   index has not yet been validated against a healthy engine.
+- **Misfires display limit 40** (*owner's decision*, 4/11/2026; it was 255):
+  at 255 a reading of 5–11 barely moved the bar. Over every timestamped
+  `canfuel` fixture the minute never went above 36 except while an
+  injector was deliberately unplugged (`31`, `41`, `43`: 107–126). The
+  limit only scales the bar: a reading above it still shows its own number
+  (the converter sends up to 254, and the limits are not a range the display
+  rejects values outside of, `tri-format.md`), and 255, "not known", reads
+  255 as before. Pop and blink stay off.
 
 ## Voltage — what was found and what to do about it
 
