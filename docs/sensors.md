@@ -283,7 +283,7 @@ The seventh, #15, is a new addition described below.
 
 ---
 
-## 0x604 — engine health: IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip, StartClt, and three flags
+## 0x604 — engine health: IdleHealth, Misfires, IdleSec, MisfAvg, StartCrank, StartDip, StartClt, and three flags
 
 - **Source:** 0x604, one byte per field, big endian like every converter
   frame. **Transmitted always**, not only with JP1 — unlike 0x603.
@@ -297,9 +297,9 @@ The seventh, #15, is a new addition described below.
 | Row | Byte | Formula | Meaning |
 |---|---|---|---|
 | IdleHealth | 0 | `raw` | 0–200, 100 = the engine before the repair; 255 until 30 s of settled idle have been graded this start |
-| IdleRough | 1 | `raw × 0.03125` = rpm | the raw grade the index is made from; 7.97 on the display is "not known" |
+| Misfires | 1 | `raw` | dips of 20 rpm and more in the last 60 s of settled idle — an estimate of the ECU's misfire counter (VCDS 014) at a standing idle; **0 = 014 most likely did not count in that minute**. Holds while driving; 255 = no idle yet this start. *Layout 2*, was IdleRough |
 | IdleSec | 2 | `raw` = s | settled idle graded this start |
-| StartHealth | 3 | `raw` | reserved, always 255 |
+| MisfAvg | 3 | `raw × 0.1` = per minute | the start's dips per minute of settled idle; 25.5 on the display is "not known". *Layout 2*, was StartHealth (never published) |
 | StartCrank | 4 | `raw × 0.032` = s | crank to first firing (400 rpm); 8.16 on the display is "not known" |
 | StartDip | 5 | `raw` = rpm | speed lost straight after first firing |
 | StartClt | 6 | `raw − 50` = °C | coolant at first firing; 205 on the display is "not known" |

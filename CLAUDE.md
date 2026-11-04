@@ -35,6 +35,9 @@ oDSS and checked in the vehicle with the converter fitted and transmitting.
 - The ten channels fed from 0x604 were uploaded and read in the car:
   `IdleHealth` leaves 255 after 30 s of idle and settles, `StartCrank` shows
   the start, and the rest read as expected.
+  **Except `Misfires` and `MisfAvg`**, positions 33 and 35 since layout 2
+  (4/11/2026): the file has them, the display has not been re-uploaded with
+  them yet, nor the converter flashed with the firmware that sends them.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
   row did not need deleting on this firmware.
 
@@ -141,7 +144,7 @@ Flow, TripFuel, TripDist,
 CanRxErr, CanTxErr, ComStat,
 CanOK, Silent, Unhealthy, DataLive, PersistOK, UnhealthyNow,
 ResetCause, TxRefused, Uptime,
-IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip,
+IdleHealth, Misfires, IdleSec, MisfAvg, StartCrank, StartDip,
 StartClt, IdleNow, StartSeen, HealthLive
 ```
 
@@ -155,8 +158,12 @@ it, not an error — `S-LINKG4X.TRI` has its internal rows in the middle too.
 **The ten rows after `Uptime` read frame 0x604, the engine-health frame**,
 which is NOT behind the jumper: it is for a closed dashboard. 255 is "not
 known" in every one of its fields and never zero; `canfuel/docs/firmware/frames.md` has
-the layout. `StartHealth` reads 255 always for now — it is reserved until a
-dozen good starts have been recorded to fit it.
+the layout. **Since layout 2 (4/11/2026) positions 33 and 35 are `Misfires`
+and `MisfAvg`** — the converter's estimate of the ECU's misfire counter at a
+standing idle, over the last minute and averaged over the start. They took
+the places of `IdleRough` and the never-published `StartHealth`, so the
+positions, and every page built on them, stay where they were; a page that
+showed one of the old two shows the new one in its place.
 
 **The twelve rows before them read frame 0x603, which the converter transmits
 only while its `DBG_EN` jumper is fitted.** They read zero without it, and that is

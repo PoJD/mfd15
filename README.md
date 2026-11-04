@@ -49,7 +49,7 @@ transmitted **whenever the converter is powered** — it is for a closed
 dashboard. Its "not known" is **255 in every field**, never zero, and the whole
 frame reads 255 while the bus is quiet:
 
-IdleHealth, IdleRough, IdleSec, StartHealth, StartCrank, StartDip,
+IdleHealth, Misfires, IdleSec, MisfAvg, StartCrank, StartDip,
 StartClt, IdleNow, StartSeen, HealthLive
 
 `canfuel/docs/firmware/frames.md` is the authority on every layout above, and the flag
