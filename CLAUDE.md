@@ -38,8 +38,8 @@ oDSS and checked in the vehicle with the converter fitted and transmitting.
   `Misfires` and `MisfAvg`, positions 33 and 35 since layout 2 (4/11/2026),
   were read in the car the same day after the converter was flashed and the
   file uploaded: plausible and consistent with each other. `Misfires`'
-  display limit was lowered to 40 afterwards (`docs/sensors.md`); that
-  version has not been uploaded yet.
+  display limit was lowered to 40 afterwards (`docs/sensors.md`), uploaded
+  and read in the car on a cold start the same night.
 - The file loaded without the "sensor named 0" problem, so the `info;` header
   row did not need deleting on this firmware.
 
