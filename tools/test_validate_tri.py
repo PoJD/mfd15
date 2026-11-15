@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from validate_tri import AQY_ORDER, GEN2_INTERNAL, check, expand
+from validate_tri import AQY_INTERNAL, AQY_ORDER, GEN2_INTERNAL, check, expand
 
 REPO = Path(__file__).resolve().parent.parent
 TRI = REPO / "tri"
@@ -47,9 +47,23 @@ class TestRealFiles(unittest.TestCase):
         ])
 
     def test_internal_gen2_lines_are_verbatim(self):
+        """DisplayTemp verbatim; DisplayVolt verbatim but for its calibration."""
         text = (TRI / "S-AQY.TRI").read_text(encoding="utf-8-sig")
-        for sensor, line in GEN2_INTERNAL.items():
+        for sensor, line in AQY_INTERNAL.items():
             self.assertIn(line, text, sensor)
+
+    def test_displayvolt_differs_from_the_official_row_only_in_its_full_scale(self):
+        """The calibration of 15/11/2026 changed column 17 and nothing else."""
+        official = GEN2_INTERNAL["DisplayVolt"].split(";")
+        ours = AQY_INTERNAL["DisplayVolt"].split(";")
+        diff = [i for i, (a, b) in enumerate(zip(official, ours)) if a != b]
+        self.assertEqual(diff, [16])
+        self.assertEqual((official[16], ours[16]), ("56", "54"))
+
+    def test_the_official_files_still_carry_the_stock_displayvolt(self):
+        for name in ("S-LINKG4X.TRI", "S-MAXX720.TRI"):
+            text = (TRI / "reference" / name).read_text(encoding="utf-8-sig")
+            self.assertIn(GEN2_INTERNAL["DisplayVolt"], text, name)
 
     def test_converter_channels_are_big_endian(self):
         """Our own frames 0x600-0x604 use Format 0, the car's frames Format 1.

@@ -85,8 +85,9 @@ broadcast on the powertrain CAN (verified systematically, see `sensors.md`),
 but the MFD15 is powered from the car through connector B, so its own supply
 voltage is exactly what we want.
 
-The 0–1023 → 0–56 V scaling comes from the official Gen2 files. If it does not
-match, calibrate with two points — the procedure is in `sensors.md`.
+The 0–1023 → 0–56 V scaling comes from the official Gen2 files and is
+nominal. **On this display it read 3.4 % high, so `S-AQY.TRI` maps 1023 to 54 V**
+(column 17; calibrated 15/11/2026 against the battery, `sensors.md`).
 
 ---
 

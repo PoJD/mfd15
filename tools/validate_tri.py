@@ -67,6 +67,28 @@ GEN2_INTERNAL = {
     "DisplayTemp": "0;FFF;0;7;0;0;0;0;0;DisplayTemp;1;0;0;0;0;0;0;1;0;100;255;0;0;0;0;2;",
 }
 
+# S-AQY.TRI's DisplayVolt is the official row with ONE column changed: column
+# 17 (MapperInfo4), the volts that raw 1023 maps to, 56 -> 54. Calibrated
+# against a multimeter on the battery's terminals, 15/11/2026: the stock
+# scaling read 12.9 against 12.41 V (ignition on, engine stopped) and 14.0
+# against 13.57 V (engine running) -- 3.4 % high on this unit. A gain-only
+# correction (0.966) was chosen over an offset; the two fit the two points
+# alike, and a gain error is what a divider and an A/D reference make. 54
+# rather than 54.1 so the row keeps the official short integer form; the
+# difference is under 0.03 V. See docs/sensors.md, "Voltage".
+DISPLAYVOLT_COL = 16          # zero-based: column 17 of the table
+DISPLAYVOLT_FULL_SCALE = "54"
+
+
+def _calibrated(row: str) -> str:
+    cols = row.split(";")
+    cols[DISPLAYVOLT_COL] = DISPLAYVOLT_FULL_SCALE
+    return ";".join(cols)
+
+
+AQY_INTERNAL = dict(GEN2_INTERNAL)
+AQY_INTERNAL["DisplayVolt"] = _calibrated(GEN2_INTERNAL["DisplayVolt"])
+
 
 def check(path: Path) -> list[str]:
     problems: list[str] = []
@@ -140,10 +162,10 @@ def check(path: Path) -> list[str]:
                 f"{path}: sensor order does not match the expected one.\n"
                 f"    expected: {AQY_ORDER}\n"
                 f"    found:    {names}")
-        for sensor, expected in GEN2_INTERNAL.items():
+        for sensor, expected in AQY_INTERNAL.items():
             if expected not in lines:
                 problems.append(
-                    f"{path}: internal sensor row {sensor} is not verbatim.\n"
+                    f"{path}: internal sensor row {sensor} is not as expected.\n"
                     f"    expected: {expected}")
 
     return problems

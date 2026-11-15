@@ -354,16 +354,29 @@ matter — editing the TRI offline to add an internal sensor is enough. The only
 problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 0–53 V, which is different hardware).
 
-> **Settled. No calibration needed.** With the stock Gen2
-> scaling from the official files (`0–1023 → 0–56 V`, the `DisplayVolt` row
-> copied verbatim) the channel reads correctly on the real display:
+> **Calibrated 15/11/2026: the stock scaling read 3.4 % high on this unit.**
+> The official Gen2 row (`0–1023 → 0–56 V`) is the nominal conversion for the
+> series, not a calibration of any one display, and the manual gives no
+> accuracy for `displayVolt` at all. Against a multimeter on the battery's
+> terminals, read at the same moment (the owner):
 >
-> - ignition on, engine stopped → **~12.5 V**
-> - engine running → **~14 V**
+> | | stock MFD | battery | calibrated MFD |
+> |---|---|---|---|
+> | ignition on, engine stopped | 12.9 V | 12.41 V | 12.44 V |
+> | engine running, warm | 14.0 V | 13.57 V | 13.50 V |
+> | engine running, main beam on | 13.7 V | 13.50 V | 13.21 V |
 >
-> That is exactly the expected battery and alternator behaviour, so the
-> scaling is right and the two-point procedure below was never needed. It is
-> kept only in case a future display or firmware version scales differently.
+> **The fix is a gain only**: column 17 of the `DisplayVolt` row, the volts
+> that raw 1023 maps to, from 56 to **54** (×0.964; the fitted 0.966 would be
+> 54.1, kept an integer so the row stays in the official short form — under
+> 0.03 V apart). *A decision*: an offset of −0.46 V fits the two points as
+> well, within the display's 0.1 V; a gain error is what a divider and an
+> A/D reference make, and it keeps 0 V at 0. **It is calibrated to the
+> battery, not to connector B**, so the wiring's drop at those currents is in
+> the constant; with main beam the display's own supply sags about 0.3 V more
+> than the battery, and the calibrated reading shows that sag rather than the
+> battery. *Until 15/11/2026 this said "no calibration needed"*, on the strength
+> of ~12.5 V and ~14 V looking plausible; no meter had been held beside it.
 
 **The two-point calibration, if it is ever needed:**
 
@@ -376,7 +389,9 @@ problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 4. Compute `a = (V₂ − V₁) / (raw₂ − raw₁)` and `b = V₁ − a × raw₁`.
 5. Put initCalc = a, initOffset = b, decimal places = 1 into the TRI file.
 
-Two points are enough because the divider is linear. Measure **at the display
+Two points are enough because the divider is linear. A gain-only fix from the
+same two readings is column 17 alone (the volts at raw 1023, × battery ÷
+shown). Measure **at the display
 connector, not at the battery** — there are a few tenths of a volt of drop in
 the wiring to the dashboard, and otherwise that resistance would be baked into
 the constant.
