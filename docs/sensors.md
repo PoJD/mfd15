@@ -368,6 +368,7 @@ problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 > | 55 | 24.8 V | 12.36 V | ignition on |
 > | 57 | 26.0 V | 12.35 V | ignition on |
 > | **27.3** | **12.4 / 13.7 V** | **12.36 / 13.7 V** | ignition on / running |
+> | 27.3 | 11.7 V | 12.12 V | ignition on, main beam on, settled |
 >
 > - **Column 17 is a multiplier for every value but 56**: MFD ≈ battery ×
 >   column 17 ÷ 27.3 at 54, 55 and 57. **56 is treated otherwise** — it reads
@@ -380,7 +381,8 @@ problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 > - **It is calibrated to the battery, not to connector B**, so the wiring's
 >   drop is in the constant at these currents; with main beam the display's
 >   own supply sags a few tenths more than the battery, and the reading shows
->   that sag.
+>   that sag — 0.4 V with main beam and the engine stopped (11.7 against
+>   12.12 V), the wiring's loss, not the display's.
 >
 > *Until 15/11/2026 this said "no calibration needed"*, on ~12.5 V and ~14 V
 > looking plausible; no meter had been held beside it.
