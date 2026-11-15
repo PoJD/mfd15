@@ -354,44 +354,43 @@ matter — editing the TRI offline to add an internal sensor is enough. The only
 problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 0–53 V, which is different hardware).
 
-> **The stock row stays, and it reads about 3.4 % high on this unit.**
-> The official Gen2 row is the nominal conversion for the series; the manual
-> gives no accuracy for `displayVolt`. Against a multimeter on the battery's
-> terminals, read at the same moment (the owner, 15/11/2026):
+> **Calibrated 15/11/2026: column 17 of the `DisplayVolt` row is 27.3, not
+> the official 56.** The official row is the nominal setting for the series and
+> read about 4 % high on this unit; the manual gives no accuracy for
+> `displayVolt` and does not say what columns 14–17 mean for it. Found in the
+> car, against a multimeter on the battery's terminals read at the same moment
+> (the owner):
 >
-> | | MFD, stock row | battery |
-> |---|---|---|
-> | ignition on, engine stopped | 12.9 V | 12.41 V |
-> | engine running, warm | 14.0 V | 13.57 V |
-> | engine running, main beam on | 13.7 V | 13.50 V |
+> | column 17 | MFD | battery | |
+> |---|---|---|---|
+> | 56 (official) | 12.9 / 14.0 / 13.7 V | 12.41 / 13.57 / 13.50 V | ignition on / running / running with main beam |
+> | 54 | 24.5 V | not measured | |
+> | 55 | 24.8 V | 12.36 V | ignition on |
+> | 57 | 26.0 V | 12.35 V | ignition on |
+> | **27.3** | **12.4 / 13.7 V** | **12.36 / 13.7 V** | ignition on / running |
 >
-> ⚠ **Column 17 is not "the volts at raw 1023"**, whatever the `0–1023 →
-> 0–56 V` shorthand above suggests: set to 54 for a 3.4 % gain cut, the
-> display showed **24.5 V** (15/11/2026, uploaded and read in the car), and the
-> row went back to 56 the same day. What columns 14–17 mean for an internal
-> sensor is not known; do not edit them on the strength of the shorthand.
-> **Column 11, initCalc, is ignored for this sensor**: set to 0.966 with column
-> 17 back at 56, the display read 13.0 V against 12.48 V on the battery
-> (ignition on, the same day) — the stock row's 4 %, unchanged. The manual's
-> `raw × initCalc + initOffset` holds for bus sensors, not for `displayVolt`.
+> - **Column 17 is a multiplier for every value but 56**: MFD ≈ battery ×
+>   column 17 ÷ 27.3 at 54, 55 and 57. **56 is treated otherwise** — it reads
+>   about half what 56 would give as a multiplier; the display's own default,
+>   as far as can be told. So 56 cannot be nudged to 54 or 57 (that doubles
+>   the reading); the fix is the multiplier itself, written like the other
+>   rows' decimals (`27.30000000`), which the display reads.
+> - **Column 11, initCalc, is ignored for this sensor**: 0.966 there read
+>   13.0 against 12.48 V, the official row's 4 % unchanged.
+> - **It is calibrated to the battery, not to connector B**, so the wiring's
+>   drop is in the constant at these currents; with main beam the display's
+>   own supply sags a few tenths more than the battery, and the reading shows
+>   that sag.
+>
 > *Until 15/11/2026 this said "no calibration needed"*, on ~12.5 V and ~14 V
 > looking plausible; no meter had been held beside it.
 
-**The two-point calibration, if it is ever needed:**
-
-1. Add a TRI row for the internal voltage sensor but with **raw scaling**:
-   initCalc = 1, initOffset = 0, decimal places = 0, mapper output = input over
-   a 0–4095 range. The display then shows the bare ADC number.
-2. Ignition on, engine stopped. Measure the voltage with a multimeter and note
-   the pair (raw₁, V₁).
-3. Start the engine and hold 3000 rpm. Measure again → (raw₂, V₂).
-4. Compute `a = (V₂ − V₁) / (raw₂ − raw₁)` and `b = V₁ − a × raw₁`.
-5. Put initCalc = a, initOffset = b, decimal places = 1 into the TRI file.
-
-Two points are enough because the divider is linear. Measure **at the display
-connector, not at the battery** — there are a few tenths of a volt of drop in
-the wiring to the dashboard, and otherwise that resistance would be baked into
-the constant.
+**Recalibrating, for another display or after a firmware update:** set
+column 17 to any value but 56 (55, say), upload, and read the MFD and a
+multimeter at the same moment, ignition on; then column 17 = that value ×
+meter ÷ shown, written with eight decimals. Check once with the engine
+running. *This replaced, on 15/11/2026, a two-point procedure through
+initCalc and initOffset, which the display ignores for this sensor.*
 
 **Fallback if the internal sensor does not work:** the MFD15 Gen2 has six
 analogue inputs. Use a divider from 12 V into AIN1 and column 18 (AIN active)

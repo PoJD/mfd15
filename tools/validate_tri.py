@@ -67,6 +67,28 @@ GEN2_INTERNAL = {
     "DisplayTemp": "0;FFF;0;7;0;0;0;0;0;DisplayTemp;1;0;0;0;0;0;0;1;0;100;255;0;0;0;0;2;",
 }
 
+# S-AQY.TRI's DisplayVolt is the official row with ONE column changed:
+# column 17, from 56 to 27.3 -- calibrated in the car on 15/11/2026 against a
+# multimeter on the battery. Column 17 is a plain multiplier for every value
+# but the official 56, which the display treats as its own default (about
+# half what 56 would give as a multiplier). Measured: 54 -> 24.5 V, 55 -> 24.8
+# and 57 -> 26.0 against 12.35-12.36 V, so 27.3 shows the battery: 12.4
+# against 12.36 V (ignition on) and 13.7 against 13.7 (engine running). The
+# stock 56 read about 4 % high. initCalc (column 11) is ignored for this
+# sensor. See docs/sensors.md, "Voltage".
+DISPLAYVOLT_COL = 16          # zero-based: column 17 of the table
+DISPLAYVOLT_MULTIPLY = "27.30000000"
+
+
+def _calibrated(row: str) -> str:
+    cols = row.split(";")
+    cols[DISPLAYVOLT_COL] = DISPLAYVOLT_MULTIPLY
+    return ";".join(cols)
+
+
+AQY_INTERNAL = dict(GEN2_INTERNAL)
+AQY_INTERNAL["DisplayVolt"] = _calibrated(GEN2_INTERNAL["DisplayVolt"])
+
 
 def check(path: Path) -> list[str]:
     problems: list[str] = []
@@ -140,10 +162,10 @@ def check(path: Path) -> list[str]:
                 f"{path}: sensor order does not match the expected one.\n"
                 f"    expected: {AQY_ORDER}\n"
                 f"    found:    {names}")
-        for sensor, expected in GEN2_INTERNAL.items():
+        for sensor, expected in AQY_INTERNAL.items():
             if expected not in lines:
                 problems.append(
-                    f"{path}: internal sensor row {sensor} is not verbatim.\n"
+                    f"{path}: internal sensor row {sensor} is not as expected.\n"
                     f"    expected: {expected}")
 
     return problems
