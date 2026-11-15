@@ -370,6 +370,10 @@ problem is that the correct scaling for Gen2 is unknown (Gen1 used 0–1023 →
 > display showed **24.5 V** (15/11/2026, uploaded and read in the car), and the
 > row went back to 56 the same day. What columns 14–17 mean for an internal
 > sensor is not known; do not edit them on the strength of the shorthand.
+> **Column 11, initCalc, is ignored for this sensor**: set to 0.966 with column
+> 17 back at 56, the display read 13.0 V against 12.48 V on the battery
+> (ignition on, the same day) — the stock row's 4 %, unchanged. The manual's
+> `raw × initCalc + initOffset` holds for bus sensors, not for `displayVolt`.
 > *Until 15/11/2026 this said "no calibration needed"*, on ~12.5 V and ~14 V
 > looking plausible; no meter had been held beside it.
 
