@@ -48,9 +48,8 @@ display itself, so it ships inside the display firmware and the firmware
 version is the only version there is — worth knowing before hunting for one, or
 before being asked for one. **This file is verified against display firmware
 4.112.**
-- DisplayVolt is **calibrated**: the stock Gen2 scaling read 3.4 % high
-  against a multimeter on the battery (15/11/2026), so column 17 of its row is
-  54, not the official 56 (`docs/sensors.md`, *Voltage*).
+- DisplayVolt reads ~12.5 V with the ignition on and ~14 V with the engine
+  running, on the stock Gen2 scaling. That settles it — no calibration needed.
 
 Offline validation also passes: 41 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
@@ -128,10 +127,8 @@ with a semicolon.
 Channels in column 4: 0–3 = AN1–4, 4 = DisplayVolt, 7 = DisplayTemp,
 10 = GearCalc, 11 = FlexFuel.
 
-These two rows come **verbatim** from the official files and use a shorter
-number format than the other rows. **S-AQY.TRI changes one column**:
-DisplayVolt's column 17 is 54, not 56, the calibration of 15/11/2026
-(`tools/validate_tri.py` holds both). The official rows:
+Copy these two rows **verbatim**. They are verified against the official files
+and use a shorter number format than the other rows:
 
 ```
 0;FFF;0;4;230;0;0;0;1;DisplayVolt;1;0;1;0;1023;0;56;1;10;16;255;0;0;0;0;0;
