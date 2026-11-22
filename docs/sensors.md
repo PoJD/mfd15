@@ -320,6 +320,33 @@ The seventh, #15, is a new addition described below.
   rejects values outside of, `tri-format.md`), and 255, "not known", reads
   255 as before. Pop and blink stay off.
 
+## 0x605 — each cylinder's share: Cyl1–Cyl4, CylWeak, CylBlocks, CylNamed
+
+- **Source:** 0x605, one byte per field, from converter firmware of
+  22/11/2026 on. **Transmitted always**, like 0x604. Appended, **not yet
+  uploaded or read on the display**.
+- **What it is:** at a standing idle, how much each cylinder gives against
+  the four's mean, in per cent of one power stroke — the reading
+  `canfuel/tools/cylscan.py` makes from a capture (cylinder 3's deficit and
+  its swell, `canfuel/docs/engine-health/open.md` S1), made live. Each value
+  is one block of 512 strokes of settled idle, about 19 s at 800 rpm, and is
+  held until the next block or the next start. A stop shorter than about
+  25 s finishes no block.
+- **The names are this car's convention**: the strongest cylinder is taken
+  to be cylinder 2, which held at every injector cut recorded; nothing on the
+  bus identifies a cylinder. CylNamed says whether this block's strongest
+  stood clear of the next.
+
+| Row | Byte | Formula | Meaning |
+|---|---|---|---|
+| Cyl1–Cyl4 | 0–3 | `raw × 0.5 − 64` = % | the cylinder's deviation from the four's mean; minus is weaker. +63.5 is "not known" (255) |
+| CylWeak | 4 | `raw` | the weakest cylinder, 1–4; 255 = no block yet |
+| CylBlocks | 5 | `raw` | blocks finished this start; 0 = nothing yet this start |
+| CylNamed | 7 bit 0 | `(raw & 1) >> 0` | the naming was clear in the last block |
+
+- **Limits −40 to +40** on the four cylinder rows: a decision so a bar shows
+  the −10 to −25 % of cylinder 3 visibly. Pop and blink off.
+
 ## Voltage — what was found and what to do about it
 
 ### There is no voltage on the CAN bus

@@ -58,6 +58,7 @@ AQY_ORDER = [
     "IdleHealth", "Misfires", "IdleSec", "MisfAvg",
     "StartCrank", "StartDip", "StartClt",
     "IdleNow", "StartSeen", "HealthLive",
+    "Cyl1", "Cyl2", "Cyl3", "Cyl4", "CylWeak", "CylBlocks", "CylNamed",
 ]
 
 # Verified against the official Gen2 files. They write numbers in a shorter
