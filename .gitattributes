@@ -10,3 +10,4 @@
 
 # Binary, never touch.
 *.pdf binary
+*.bmp binary

@@ -134,6 +134,29 @@ Anything beyond this — the buttons, the pages, the rest of oDSS — is in
 [`docs/manual-mfd15-gen2.pdf`](docs/manual-mfd15-gen2.pdf), §4 for the
 connection and §6 for oDSS itself.
 
+## The start image
+
+**`logo/logo.bmp`** is the owner's own car, cut out of a photograph onto black
+and scaled so the whole outline fits inside the round glass. The display shows
+it at power-up.
+
+The display accepts a start image only on these terms
+(`docs/manual-mfd15-gen2.pdf` §6.3 and §9.5):
+
+- **24-bit BMP.** Not PNG or JPEG, and renaming a PNG does not make it a BMP.
+- **At most 128 × 128 pixels.** §9.5 says 128 × 128.
+- **The file is named exactly `logo.bmp`.**
+
+It is uploaded the same way as the TRI file (steps 0 to 4 above, then
+**Upload File** in oDSS). The progress bar reports success, and the new image
+appears at the **next** power-up, not at once.
+
+**Not yet seen on the display.** The file has been checked against the format
+above, and nothing more. Black is chosen for the background because black
+pixels on the OLED stay dark, so the image blends into the bezel.
+
+---
+
 ## Uploading puts errors on the CAN bus, briefly
 
 **Observed in the vehicle with the converter fitted:** uploading a TRI file, and
@@ -181,6 +204,8 @@ python -m unittest discover -s tools -p "test_*.py"
 tri/
   S-AQY.TRI              production file, 41 sensors
   reference/             official Gen2 files used as examples
+logo/
+  logo.bmp               start image, 128 x 128, 24-bit BMP
 docs/
   sensors.md             description of every sensor and where it comes from
   tri-format.md          26 columns, meaning of each
