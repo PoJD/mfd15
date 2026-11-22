@@ -233,6 +233,28 @@ what was observed and what is still unexplained.
 
 ---
 
+## A gauge's maximum and its highlighting are set on the page, not here
+
+Each gauge on a page has two checkboxes in oDSS's page settings (the
+manual, §6.1.4 *Pages*, names the first; the second observed by the
+owner, 22/11/2026, display firmware 4.112):
+
+- **Max** shows the maximum reached this drive beneath the value.
+- **Highlight warnings** colours the value against the warning limits —
+  the TRI file's Min and Max (columns 19 and 20; the manual, §8.1, calls
+  them the lower and upper warning value).
+
+With both cleared the gauge shows the current value and nothing else.
+**Clear both for values that are a state, not a measurement** —
+`CylNamed`, `CylWeak`, the `Prv…` rows, `Uptime`, the flags — where a
+maximum means nothing and a value sitting on its Max is normal:
+`CylNamed` at 1 and `CylWeak` at 4 showed yellow until they were cleared.
+Keep them for real measurements (oil temperature, `FuelTank`, `Range`).
+**This is the display's setting, not the file's**: the limits in the TRI
+file need no change for it.
+
+---
+
 ## Validation
 
 ```
