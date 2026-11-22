@@ -152,21 +152,14 @@ It is uploaded the same way as the TRI file (steps 0 to 4 above, then
 **Upload File** in oDSS). The progress bar reports success, and the new image
 appears at the **next** power-up, not at once.
 
-**On the display** (22/11/2026, firmware 4.112): the cut-out version uploaded,
-showed at the next power-up, and nothing else changed. The image is drawn as
-a **square**, not clipped to a circle, and the boot screen writes the firmware
-version and serial number over its bottom rows. The plain photograph showed
-**colours it does not contain** (a maroon patch where the file holds
-pale blue and white, light stripes over the fence), so the display does not
-render every 24-bit colour faithfully. Which ones it gets wrong is not
-established yet.
-
-**`logo/test/logo.bmp`** is a test pattern for exactly that question: eight
-full-intensity bars (white, yellow, cyan, green, magenta, red, blue, black),
-a 16-step grey ramp, 16-step ramps of red, green and blue alone, the eight
-bars again at half intensity, and black below where the boot text goes. A
-photograph of it on the display shows which channel or which level goes
-wrong.
+**On the display** (22/11/2026, firmware 4.112): both the cut-out and the
+plain photograph showed at the next power-up, colours as in the file, and
+nothing else changed. The image is drawn as a **square**, not clipped to a
+circle, and the boot screen writes the firmware version and serial number
+over its bottom rows. One upload of the photograph showed colours the file
+does not hold; uploading the same file again cured it, so it was the
+transfer, not the display's colour handling. If a start image looks
+mangled, upload it again before suspecting the file.
 
 ---
 
@@ -219,7 +212,6 @@ tri/
   reference/             official Gen2 files used as examples
 logo/
   logo.bmp               start image: the car photo, 128 x 128, 24-bit BMP
-  test/logo.bmp          colour test pattern in the same format
 docs/
   sensors.md             description of every sensor and where it comes from
   tri-format.md          26 columns, meaning of each
