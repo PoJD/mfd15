@@ -155,7 +155,8 @@ appears at the **next** power-up, not at once.
 **On the display** (22/11/2026, firmware 4.112): both the cut-out and the
 plain photograph showed at the next power-up, colours as in the file, and
 nothing else changed. The image is drawn as a **square**, not clipped to a
-circle, and the boot screen writes the firmware version and serial number
+circle: the housing is round but the OLED panel inside it is square (seen
+by the owner with the unit dismantled), and the boot screen writes the firmware version and serial number
 over its bottom rows. One upload of the photograph showed colours the file
 does not hold; uploading the same file again cured it, so it was the
 transfer, not the display's colour handling. If a start image looks
