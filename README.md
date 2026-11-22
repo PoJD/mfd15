@@ -134,33 +134,45 @@ Anything beyond this — the buttons, the pages, the rest of oDSS — is in
 [`docs/manual-mfd15-gen2.pdf`](docs/manual-mfd15-gen2.pdf), §4 for the
 connection and §6 for oDSS itself.
 
-## The start image
+## *(optional)* The start image
 
-**`logo/logo.bmp`** is a photograph of the owner's own car, cropped to a square
-around the car and scaled down, with no other change. The display shows it at
-power-up. A first version, the car cut out onto black, worked but looked
-artificial and was replaced.
+The display shows a picture at power-up, and **any picture will do** — this
+step is optional and nothing else depends on it. `logo/logo.bmp` is just this
+car's: a photograph of it, cropped to a square around the car and scaled
+down, with no other change. Make your own the same way.
 
-The display accepts a start image only on these terms
+**The display accepts a start image only on these terms**
 (`docs/manual-mfd15-gen2.pdf` §6.3 and §9.5):
 
 - **24-bit BMP.** Not PNG or JPEG, and renaming a PNG does not make it a BMP.
-- **At most 128 × 128 pixels.** §9.5 says 128 × 128.
+  Any image editor that can "save as BMP, 24 bit" will do; the manual
+  suggests MS Paint.
+- **At most 128 × 128 pixels.** §9.5 says 128 × 128, so make it exactly that.
 - **The file is named exactly `logo.bmp`.**
 
-It is uploaded the same way as the TRI file (steps 0 to 4 above, then
-**Upload File** in oDSS). The progress bar reports success, and the new image
-appears at the **next** power-up, not at once.
+**What the manual does not say, and the display does** (firmware 4.112):
 
-**On the display** (22/11/2026, firmware 4.112): both the cut-out and the
-plain photograph showed at the next power-up, colours as in the file, and
-nothing else changed. The image is drawn as a **square**, not clipped to a
-circle: the housing is round but the OLED panel inside it is square (seen
-by the owner with the unit dismantled), and the boot screen writes the firmware version and serial number
-over its bottom rows. One upload of the photograph showed colours the file
-does not hold; uploading the same file again cured it, so it was the
-transfer, not the display's colour handling. If a start image looks
-mangled, upload it again before suspecting the file.
+- **The picture is drawn square, edge to edge.** The housing is round, but
+  the OLED panel inside it is square (seen by the owner with the unit
+  dismantled), so nothing is clipped to a circle and the corners show.
+- **The boot screen writes the firmware version and serial number over the
+  bottom rows.** Keep anything that matters out of the bottom tenth or so.
+- **A plain photograph looks better than a cut-out.** The first version here
+  was the car cut out onto black; it displayed correctly but looked
+  artificial, and the uncut photograph replaced it.
+
+**Uploading it:** download `logo.bmp` onto the phone first, then steps 1 to 4
+of *Uploading the file* above, then **Upload File** in oDSS. The progress bar
+reports success, and the picture appears at the **next** power-up, not at
+once. **If it comes up with colours it does not contain, upload it again**:
+that happened here once, and the same file uploaded a second time was
+correct, so it was the transfer and not the file. **On older firmware a
+picture upload overwrote the TRI file** — CANchecked's changelog lists the
+fix in v4.100e — so on anything older, upload the TRI file again afterwards;
+RPM missing is the tell.
+
+Verified on this display, firmware 4.112, 22/11/2026: both versions showed
+at the next power-up and nothing else changed.
 
 ---
 
