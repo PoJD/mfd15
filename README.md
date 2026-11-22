@@ -21,9 +21,10 @@ the car against the converter: `IdleHealth` left 255 after half a minute of
 idle and settled on a plausible value, `StartCrank` shows the start, and the
 other rows read as expected. The first thirty-one rows kept their positions.
 
-**The seven rows after them, frame 0x605, are appended but not yet uploaded**
-(22/11/2026): each cylinder's share of a standing idle, from a converter
-firmware that sends 0x605. The first forty-one rows keep their positions.
+**The eighteen rows after them, frames 0x605 to 0x607, are appended but not
+yet uploaded** (22/11/2026): each cylinder's share of a standing idle, and a
+summary of this drive's and the previous drive's warm idles, from a converter
+firmware that sends them. The first forty-one rows keep their positions.
 
 **The whole build path, across all three repositories, is
 [`canfuel/docs/firmware/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/firmware/install.md).**
@@ -31,7 +32,7 @@ The step this repository owns is step 2, and it is done.
 
 ## What the file does
 
-48 sensors. Nine of them read the car's powertrain CAN directly and work on
+59 sensors. Nine of them read the car's powertrain CAN directly and work on
 their own, with no converter present at all:
 
 RPM, Speed, CLT, OilTemp, TankL, AccelG, FuelCntRaw, DisplayVolt, DisplayTemp
@@ -64,6 +65,15 @@ of the cylinders was clear. 255 is "not known" here too; on the display it
 reads +63.5 on the four cylinder rows:
 
 Cyl1, Cyl2, Cyl3, Cyl4, CylWeak, CylBlocks, CylNamed
+
+The last eleven decode 0x606 and 0x607: a summary of the warm standing idle
+(oil at 85 °C and above) of this drive, and of the previous one as the
+converter's EEPROM kept it — minutes of warm idle, the mean IdleHealth, the
+misfire estimate per minute, the weakest cylinder's mean deviation and which
+cylinder it was; PrvStored says a previous drive was found at all:
+
+DrvIdleMin, DrvHealth, DrvMisf, DrvWeak, DrvWeakCyl,
+PrvIdleMin, PrvHealth, PrvMisf, PrvWeak, PrvWeakCyl, PrvStored
 
 `canfuel/docs/firmware/frames.md` is the authority on every layout above, and the flag
 and reset-cause bits are tabulated there.
@@ -234,7 +244,7 @@ python -m unittest discover -s tools -p "test_*.py"
 
 ```
 tri/
-  S-AQY.TRI              production file, 48 sensors
+  S-AQY.TRI              production file, 59 sensors
   reference/             official Gen2 files used as examples
 logo/
   logo.bmp               start image: the car photo, 128 x 128, 24-bit BMP

@@ -53,7 +53,7 @@ before being asked for one. **This file is verified against display firmware
   the battery; `docs/sensors.md`, *Voltage*). 56 is the display's special
   default; any other value there is a plain multiplier.
 
-Offline validation also passes: 48 sensors in the right order, both Gen2
+Offline validation also passes: 59 sensors in the right order, both Gen2
 internal rows verbatim, `tools/validate_tri.py` clean on this file and on both
 reference files, all tests green.
 
@@ -72,7 +72,7 @@ The one standing obligation is the coupling to the converter: the layout in
 `canfuel/docs/firmware/frames.md` and the rows here have to move together. It runs in
 both directions — a change on either side without a matching change on the
 other breaks the display silently, with plausible but wrong numbers rather than
-an error. All six frames, 0x600 to 0x605, now have rows here, so the coupling
+an error. All eight frames, 0x600 to 0x607, now have rows here, so the coupling
 covers every field the converter transmits.
 
 The useful check on the display is comparing FuelNow against FuelCntRaw:
@@ -141,7 +141,7 @@ DisplayVolt's column 17 is `27.30000000`, not 56, the calibration of
 
 ---
 
-## S-AQY.TRI — 48 sensors, do not reorder the rows
+## S-AQY.TRI — 59 sensors, do not reorder the rows
 
 ```
 RPM, Speed, CLT, FuelNow, FuelAvg, FuelTank, Range, Torque, Power,
@@ -152,7 +152,9 @@ CanOK, Silent, Unhealthy, DataLive, PersistOK, UnhealthyNow,
 ResetCause, TxRefused, Uptime,
 IdleHealth, Misfires, IdleSec, MisfAvg, StartCrank, StartDip,
 StartClt, IdleNow, StartSeen, HealthLive,
-Cyl1, Cyl2, Cyl3, Cyl4, CylWeak, CylBlocks, CylNamed
+Cyl1, Cyl2, Cyl3, Cyl4, CylWeak, CylBlocks, CylNamed,
+DrvIdleMin, DrvHealth, DrvMisf, DrvWeak, DrvWeakCyl,
+PrvIdleMin, PrvHealth, PrvMisf, PrvWeak, PrvWeakCyl, PrvStored
 ```
 
 **APPEND, NEVER INSERT.** A TRI file is addressed by position and the display
@@ -179,6 +181,12 @@ CylWeak 1–4; CylBlocks; CylNamed, bit 0 of byte 7. **Appended, not yet
 uploaded or seen on the display**; `canfuel/docs/firmware/frames.md` has the
 layout and what the values mean.
 
+**The eleven rows after `CylNamed` read 0x606 and 0x607**, this drive's and
+the previous drive's warm idles, one layout for both: IdleMin (two bytes,
+seconds shown as minutes), Health, Misf (× 0.1), Weak (`× 0.5 − 64`),
+WeakCyl, and on 0x607 PrvStored (bit 0 of byte 7). **Appended, not yet
+uploaded.**
+
 **The twelve rows before the 0x604 rows read frame 0x603, which the converter transmits
 only while its `DBG_EN` jumper is fitted.** They read zero without it, and that is
 the design rather than a fault. The point of having them is that "is the CAN
@@ -189,7 +197,7 @@ USBtin.
 and the shift second. That is not the obvious reading and it is settled by the
 official reference files; the evidence is in `docs/tri-format.md`.
 
-**Big endian for our own frames.** Channels from the converter (0x600–0x605)
+**Big endian for our own frames.** Channels from the converter (0x600–0x607)
 use Format 0; channels from the car (0x280, 0x1A0, 0x480) use Format 1. The car
 sends little endian, we send big endian — deliberately, so the two cannot be
 confused.
@@ -315,7 +323,7 @@ Two siblings sit next to this one, with separate toolchains and separate GitHub
 remotes under `PoJD/`. The directory above them is deliberately not a git repo,
 so always run git inside one of the three.
 
-- `canfuel` — the firmware that fills frames 0x600–0x605
+- `canfuel` — the firmware that fills frames 0x600–0x607
 - `kicad` — the converter board
 
 **`canfuel/docs/firmware/refuted.md` collects the refuted hypotheses of all three

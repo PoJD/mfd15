@@ -347,6 +347,25 @@ The seventh, #15, is a new addition described below.
 - **Limits −40 to +40** on the four cylinder rows: a decision so a bar shows
   the −10 to −25 % of cylinder 3 visibly. Pop and blink off.
 
+## 0x606 and 0x607 — the drive's warm idles: Drv* and Prv*
+
+- **Source:** 0x606 (this drive, live) and 0x607 (the previous drive, from
+  the converter's EEPROM), one layout, converter firmware of 22/11/2026 on.
+  **Transmitted always.** Appended, **not yet uploaded**.
+- **What it is:** a handful of numbers per drive, to report and to compare
+  drives by, over the drive's settled standing idle with the oil at 85 °C or
+  more. A drive is one ignition cycle. The EEPROM is written at most every
+  five minutes, so the last minutes of a drive may be missing from 0x607.
+
+| Row | Byte | Formula | Meaning |
+|---|---|---|---|
+| DrvIdleMin / PrvIdleMin | 0–1 | `raw ÷ 60` = min | warm idle of the drive |
+| DrvHealth / PrvHealth | 2 | `raw` | mean IdleHealth over the warm idle; 255 = not known |
+| DrvMisf / PrvMisf | 3 | `raw × 0.1` = per minute | the misfire estimate per minute of warm idle; 25.5 = not known |
+| DrvWeak / PrvWeak | 4 | `raw × 0.5 − 64` = % | the weakest cylinder's mean deviation (0x605); +63.5 = not known |
+| DrvWeakCyl / PrvWeakCyl | 5 | `raw` | the cylinder that was weakest most often |
+| PrvStored | 0x607 byte 7 bit 0 | `(raw & 1) >> 0` | a previous drive was found in the EEPROM |
+
 ## Voltage — what was found and what to do about it
 
 ### There is no voltage on the CAN bus

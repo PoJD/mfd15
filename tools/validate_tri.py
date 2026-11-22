@@ -59,6 +59,8 @@ AQY_ORDER = [
     "StartCrank", "StartDip", "StartClt",
     "IdleNow", "StartSeen", "HealthLive",
     "Cyl1", "Cyl2", "Cyl3", "Cyl4", "CylWeak", "CylBlocks", "CylNamed",
+    "DrvIdleMin", "DrvHealth", "DrvMisf", "DrvWeak", "DrvWeakCyl",
+    "PrvIdleMin", "PrvHealth", "PrvMisf", "PrvWeak", "PrvWeakCyl", "PrvStored",
 ]
 
 # Verified against the official Gen2 files. They write numbers in a shorter
