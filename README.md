@@ -136,9 +136,10 @@ connection and §6 for oDSS itself.
 
 ## The start image
 
-**`logo/logo.bmp`** is the owner's own car, cut out of a photograph onto black
-and scaled so the whole outline fits inside the round glass. The display shows
-it at power-up.
+**`logo/logo.bmp`** is a photograph of the owner's own car, cropped to a square
+around the car and scaled down, with no other change. The display shows it at
+power-up. A first version, the car cut out onto black, worked but looked
+artificial and was replaced.
 
 The display accepts a start image only on these terms
 (`docs/manual-mfd15-gen2.pdf` §6.3 and §9.5):
@@ -151,9 +152,9 @@ It is uploaded the same way as the TRI file (steps 0 to 4 above, then
 **Upload File** in oDSS). The progress bar reports success, and the new image
 appears at the **next** power-up, not at once.
 
-**Not yet seen on the display.** The file has been checked against the format
-above, and nothing more. Black is chosen for the background because black
-pixels on the OLED stay dark, so the image blends into the bezel.
+**Verified on the display** (22/11/2026, firmware 4.112): a `logo.bmp` made
+this way uploaded, showed at the next power-up, and nothing else changed. The
+round glass hides the square's corners, which hold only background.
 
 ---
 
@@ -205,7 +206,7 @@ tri/
   S-AQY.TRI              production file, 41 sensors
   reference/             official Gen2 files used as examples
 logo/
-  logo.bmp               start image, 128 x 128, 24-bit BMP
+  logo.bmp               start image: the car photo, 128 x 128, 24-bit BMP
 docs/
   sensors.md             description of every sensor and where it comes from
   tri-format.md          26 columns, meaning of each
