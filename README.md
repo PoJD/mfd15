@@ -21,10 +21,15 @@ the car against the converter: `IdleHealth` left 255 after half a minute of
 idle and settled on a plausible value, `StartCrank` shows the start, and the
 other rows read as expected. The first thirty-one rows kept their positions.
 
-**The eighteen rows after them, frames 0x605 to 0x607, are appended but not
-yet uploaded** (22/11/2026): each cylinder's share of a standing idle, and a
-summary of this drive's and the previous drive's warm idles, from a converter
-firmware that sends them. The first forty-one rows keep their positions.
+**The eighteen rows after them, frames 0x605 to 0x607** (22/11/2026): each
+cylinder's share of a standing idle, and a summary of this drive's and the
+previous drive's warm idles. **Uploaded and read in the car on 22/11/2026**,
+two drives with long warm stops: the four cylinders, `CylWeak` and `CylNamed`
+plausible block by block, this drive's rows filling from the warm idle, and the
+previous drive's reading 255 until a record was stored, then showing the drive
+before after the next power-up. `CylBlocks`, the two `WeakCyl` rows and
+`PrvStored` were on no page and are not seen yet. The first forty-one rows keep
+their positions.
 
 **The whole build path, across all three repositories, is
 [`canfuel/docs/firmware/install.md`](https://github.com/PoJD/canfuel/blob/main/docs/firmware/install.md).**

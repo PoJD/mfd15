@@ -177,15 +177,16 @@ showed one of the old two shows the new one in its place.
 **The seven rows after `HealthLive` read frame 0x605, the cylinder frame**
 (22/11/2026), also not behind the jumper: Cyl1–Cyl4 as `raw × 0.5 − 64`, per
 cent of a stroke from the four's mean, so 255, "not known", shows +63.5;
-CylWeak 1–4; CylBlocks; CylNamed, bit 0 of byte 7. **Appended, not yet
-uploaded or seen on the display**; `canfuel/docs/firmware/frames.md` has the
-layout and what the values mean.
+CylWeak 1–4; CylBlocks; CylNamed, bit 0 of byte 7. **Uploaded and read in the
+car 22/11/2026** (`README.md`, *Status*; `CylBlocks` on no page yet);
+`canfuel/docs/firmware/frames.md` has the layout and what the values mean.
 
 **The eleven rows after `CylNamed` read 0x606 and 0x607**, this drive's and
 the previous drive's warm idles, one layout for both: IdleMin (two bytes,
 seconds shown as minutes), Health, Misf (× 0.1), Weak (`× 0.5 − 64`),
-WeakCyl, and on 0x607 PrvStored (bit 0 of byte 7). **Appended, not yet
-uploaded.**
+WeakCyl, and on 0x607 PrvStored (bit 0 of byte 7). **Uploaded and read in the
+car 22/11/2026**: 0x607 showed the previous drive after a power-up. The two
+`WeakCyl` rows and `PrvStored` were on no page and are not seen yet.
 
 **The twelve rows before the 0x604 rows read frame 0x603, which the converter transmits
 only while its `DBG_EN` jumper is fitted.** They read zero without it, and that is
